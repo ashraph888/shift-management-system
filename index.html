@@ -1,568 +1,670 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShiftSync - Modern Shift Management</title>
+    <title>ShiftSync Pro - Staff Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #3498db;
-            --secondary: #2980b9;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --dark: #2c3e50;
-            --light: #ecf0f1;
-            --border-radius: 12px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --primary: #4361ee;
+            --primary-light: #e0e7ff;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #4bb543;
+            --warning: #ff9500;
+            --danger: #ff3e3e;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
         }
 
-```
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        line-height: 1.6;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
 
-    /* Login Styles */
-    .login-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    .login-card {
-        background: white;
-        padding: 3rem;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        width: 100%;
-        max-width: 400px;
-        text-align: center;
-    }
-    
-    .login-logo {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-    
-    .login-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--dark);
-    }
-    
-    .login-subtitle {
-        color: #7f8c8d;
-        margin-bottom: 2rem;
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-        text-align: left;
-    }
-    
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: var(--dark);
-    }
-    
-    .form-input, .form-select {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 2px solid var(--light);
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.3s ease;
-    }
-    
-    .form-input:focus, .form-select:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
-    
-    .login-btn {
-        width: 100%;
-        padding: 0.875rem;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-    
-    .login-btn:hover {
-        background: var(--secondary);
-    }
-    
-    .demo-credentials {
-        margin-top: 1.5rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        text-align: left;
-    }
-    
-    .demo-credentials strong {
-        color: var(--dark);
-    }
-
-    /* Main App Styles */
-    .app-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        background: white;
-        min-height: 100vh;
-        box-shadow: var(--shadow);
-    }
-    
-    .app-header {
-        background: linear-gradient(135deg, var(--dark), #34495e);
-        color: white;
-        padding: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .header-left h1 {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .header-left p {
-        opacity: 0.9;
-    }
-    
-    .user-profile {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    
-    .avatar {
-        width: 50px;
-        height: 50px;
-        background: var(--primary);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 1.2rem;
-    }
-    
-    .user-info h3 {
-        margin-bottom: 0.25rem;
-    }
-    
-    .user-role {
-        font-size: 0.875rem;
-        opacity: 0.8;
-        text-transform: capitalize;
-    }
-    
-    .logout-btn {
-        background: transparent;
-        border: 2px solid rgba(255,255,255,0.3);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-left: 1rem;
-    }
-    
-    .logout-btn:hover {
-        background: rgba(255,255,255,0.1);
-        border-color: rgba(255,255,255,0.5);
-    }
-
-    /* Navigation */
-    .navigation {
-        background: #34495e;
-        display: flex;
-        justify-content: center;
-        border-bottom: 3px solid var(--primary);
-        flex-wrap: wrap;
-    }
-    
-    .nav-btn {
-        background: none;
-        border: none;
-        color: white;
-        padding: 1.25rem 2rem;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        border-bottom: 3px solid transparent;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .nav-btn:hover {
-        background: rgba(52, 152, 219, 0.2);
-    }
-    
-    .nav-btn.active {
-        background: var(--primary);
-        border-bottom-color: var(--secondary);
-    }
-
-    /* Content */
-    .content {
-        padding: 2rem;
-    }
-    
-    .section {
-        display: none;
-    }
-    
-    .section.show {
-        display: block;
-        animation: fadeIn 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .section-header {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: white;
-        padding: 2rem;
-        border-radius: var(--border-radius);
-        margin-bottom: 2rem;
-        text-align: center;
-    }
-    
-    .section-header h2 {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-    }
-
-    /* Dashboard */
-    .dashboard-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .card {
-        background: white;
-        padding: 2rem;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        text-align: center;
-        border-left: 4px solid var(--primary);
-        transition: transform 0.3s ease;
-    }
-    
-    .card:hover {
-        transform: translateY(-5px);
-    }
-    
-    .card h3 {
-        color: var(--dark);
-        margin-bottom: 1rem;
-        font-size: 1.1rem;
-    }
-    
-    .card .number {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: var(--primary);
-        margin: 1rem 0;
-    }
-    
-    .quick-actions {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-top: 2rem;
-    }
-    
-    .quick-btn {
-        background: white;
-        border: 2px solid var(--light);
-        padding: 1.5rem;
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        color: inherit;
-    }
-    
-    .quick-btn:hover {
-        border-color: var(--primary);
-        transform: translateY(-3px);
-        box-shadow: var(--shadow);
-    }
-
-    /* Forms */
-    .form-container {
-        background: white;
-        padding: 2rem;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        margin-bottom: 2rem;
-    }
-    
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .form-group.full-width {
-        grid-column: 1 / -1;
-    }
-    
-    textarea {
-        resize: vertical;
-        min-height: 100px;
-    }
-
-    /* Buttons */
-    .btn {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 0.875rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        margin: 0.25rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-success { background: var(--success); color: white; }
-    .btn-warning { background: var(--warning); color: white; }
-    .btn-secondary { background: #95a5a6; color: white; }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-add { background: var(--success); color: white; width: 100%; margin-top: 1rem; }
-    
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    /* Shifts */
-    .shifts-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 2rem;
-    }
-    
-    .shift-card {
-        background: white;
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        box-shadow: var(--shadow);
-        border-left: 5px solid;
-    }
-    
-    .shift-a { border-left-color: var(--warning); }
-    .shift-b { border-left-color: var(--primary); }
-    .shift-c { border-left-color: var(--success); }
-    
-    .shift-header {
-        font-size: 1.4rem;
-        font-weight: bold;
-        padding: 1rem;
-        border-radius: 8px;
-        text-align: center;
-        color: white;
-        margin-bottom: 1.5rem;
-    }
-    
-    .shift-a .shift-header { background: var(--warning); }
-    .shift-b .shift-header { background: var(--primary); }
-    .shift-c .shift-header { background: var(--success); }
-    
-    .team-section {
-        margin-bottom: 1.5rem;
-        background: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 10px;
-    }
-    
-    .team-title {
-        font-weight: bold;
-        margin-bottom: 1rem;
-        color: var(--dark);
-    }
-    
-    .employee-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-        align-items: center;
-    }
-
-    /* Status buttons */
-    .status-buttons {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        margin-top: 1rem;
-    }
-    
-    .status-btn {
-        padding: 0.75rem 1.25rem;
-        border: 2px solid var(--light);
-        background: white;
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    
-    .status-btn.selected {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-
-    /* Groups */
-    .group-members {
-        min-height: 120px;
-        border: 2px dashed var(--light);
-        border-radius: 10px;
-        padding: 1rem;
-        background: #f8f9fa;
-    }
-    
-    .member-tag {
-        display: inline-block;
-        background: var(--primary);
-        color: white;
-        padding: 0.5rem 0.75rem;
-        margin: 0.25rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-    }
-    
-    .remove-btn {
-        background: var(--danger);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        margin-left: 0.5rem;
-        cursor: pointer;
-        font-size: 0.75rem;
-    }
-
-    /* Messages */
-    .message {
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-        font-weight: 500;
-    }
-    
-    .message.success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    
-    .message.error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    .button-group {
-        text-align: center;
-        margin-top: 2rem;
-    }
-
-    .hidden {
-        display: none !important;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .app-header {
-            flex-direction: column;
-            gap: 1rem;
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f5f7fb;
+        }
+        
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
             text-align: center;
         }
         
-        .navigation {
+        .login-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        
+        .login-btn:hover {
+            background: var(--secondary);
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        /* Main Application */
+        .app-container {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .logo-icon {
+            background: var(--primary);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .nav-menu {
+            display: flex;
             flex-direction: column;
-        }
-        
-        .nav-btn {
-            padding: 1rem;
-            text-align: center;
-        }
-        
-        .content {
-            padding: 1rem;
-        }
-        
-        .shifts-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .employee-row {
-            grid-template-columns: 1fr;
             gap: 0.5rem;
         }
-        
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .status-buttons {
-            justify-content: center;
-        }
-    }
-</style>
-```
 
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: var(--gray);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Dashboard Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .icon-blue {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .icon-green {
+            background: #e3fcef;
+            color: var(--success);
+        }
+
+        .icon-orange {
+            background: #fff4e6;
+            color: var(--warning);
+        }
+
+        .icon-purple {
+            background: #f3e8ff;
+            color: #7e22ce;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--danger);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .action-1 {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+        }
+
+        .action-2 {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+        }
+
+        .action-3 {
+            background: linear-gradient(135deg, #f72585, #b5179e);
+        }
+
+        .action-4 {
+            background: linear-gradient(135deg, #7209b7, #560bad);
+        }
+
+        .action-title {
+            font-weight: 600;
+        }
+
+        .action-desc {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        /* Shifts */
+        .shifts-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .shifts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .shift-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .shift-header {
+            padding: 1rem 1.5rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .shift-a {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+
+        .shift-b {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .shift-c {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .shift-body {
+            background: white;
+            padding: 1.5rem;
+        }
+
+        .team-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .team-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .employee-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            align-items: center;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .add-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Forms */
+        select, input, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .status-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .status-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--light-gray);
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .status-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray);
+            border: 1px solid var(--light-gray);
+        }
+
+        .btn-secondary:hover {
+            background: var(--light-gray);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #3a9a32;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e03535;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        /* Groups */
+        .group-members {
+            min-height: 100px;
+            border: 2px dashed var(--light-gray);
+            border-radius: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .member-tag {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .remove-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            margin-left: 5px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #e3fcef;
+            color: var(--success);
+            border: 1px solid #abefc6;
+        }
+
+        .message.error {
+            background: #ffebee;
+            color: var(--danger);
+            border: 1px solid #ffcdd2;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                height: auto;
+                position: relative;
+                padding: 1rem;
+            }
+            
+            .nav-menu {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .employee-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Login Screen -->
     <div id="loginScreen" class="login-container">
         <div class="login-card">
-            <div class="login-logo">🕐</div>
-            <h2 class="login-title">ShiftSync</h2>
-            <p class="login-subtitle">Modern Shift Management System</p>
-            <form class="login-form" onsubmit="handleLogin(event)">
+            <h2 class="login-title">ShiftSync Pro Login</h2>
+            <form id="loginForm" class="login-form">
                 <div class="form-group">
                     <label for="loginUsername" class="form-label">Username</label>
                     <input type="text" id="loginUsername" class="form-input" required>
@@ -571,966 +673,1199 @@
                     <label for="loginPassword" class="form-label">Password</label>
                     <input type="password" id="loginPassword" class="form-input" required>
                 </div>
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
+                <button type="submit" class="login-btn">Login</button>
             </form>
-
-```
-        <div class="demo-credentials">
-            <strong>Demo Credentials:</strong><br>
-            Admin: admin / admin123<br>
-            Manager: manager / manager123<br>
-            Staff: staff1 / staff123<br><br>
-            <button type="button" onclick="quickLogin('admin')" style="margin: 2px; padding: 5px 10px; border: none; background: #3498db; color: white; border-radius: 4px; cursor: pointer;">Quick Admin Login</button>
-            <button type="button" onclick="quickLogin('manager')" style="margin: 2px; padding: 5px 10px; border: none; background: #27ae60; color: white; border-radius: 4px; cursor: pointer;">Quick Manager Login</button>
-            <button type="button" onclick="quickLogin('staff1')" style="margin: 2px; padding: 5px 10px; border: none; background: #f39c12; color: white; border-radius: 4px; cursor: pointer;">Quick Staff Login</button>
-        </div>
-    </div>
-</div>
-
-<!-- Main Application -->
-<div id="appContainer" class="app-container hidden">
-    <!-- Header -->
-    <div class="app-header">
-        <div class="header-left">
-            <h1>🕐 ShiftSync</h1>
-            <p>Modern Shift Management System</p>
-            <p>Date: <span id="currentDate"></span></p>
-        </div>
-        <div class="user-profile">
-            <div class="avatar" id="userAvatar">A</div>
-            <div class="user-info">
-                <h3 id="userName">Admin User</h3>
-                <div class="user-role" id="userRole">admin</div>
-            </div>
-            <button class="logout-btn" onclick="handleLogout()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
+            <div id="loginMessage" style="margin-top: 1rem;"></div>
         </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="navigation">
-        <button class="nav-btn active" onclick="showSection('dashboard')">
-            <i class="fas fa-chart-pie"></i> Dashboard
-        </button>
-        <button class="nav-btn" onclick="showSection('shifts')">
-            <i class="fas fa-users"></i> Shift Management
-        </button>
-        <button class="nav-btn" onclick="showSection('work-details')">
-            <i class="fas fa-clipboard-list"></i> Work Details
-        </button>
-        <button class="nav-btn admin-only" onclick="showSection('groups')">
-            <i class="fas fa-layer-group"></i> Groups
-        </button>
-        <button class="nav-btn" onclick="showSection('reports')">
-            <i class="fas fa-chart-bar"></i> Reports
-        </button>
-    </div>
-
-    <!-- Content -->
-    <div class="content">
-        <!-- Dashboard Section -->
-        <div id="dashboard" class="section show">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-pie"></i> Dashboard Overview</h2>
-                <p>Welcome to your shift management dashboard</p>
+    <!-- Main Application (hidden initially) -->
+    <div id="appContainer" class="app-container hidden">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="logo-text">ShiftSync Pro</div>
             </div>
             
-            <div class="dashboard-cards">
-                <div class="card">
-                    <h3>Total Staff</h3>
-                    <div class="number" id="totalStaff">44</div>
-                    <p>Active employees</p>
-                </div>
-                <div class="card">
-                    <h3>Active Groups</h3>
-                    <div class="number" id="totalGroups">0</div>
-                    <p>Employee groups</p>
-                </div>
-                <div class="card">
-                    <h3>Work Entries</h3>
-                    <div class="number" id="totalWork">0</div>
-                    <p>Today's entries</p>
-                </div>
-                <div class="card">
-                    <h3>Active Shifts</h3>
-                    <div class="number">3</div>
-                    <p>Running shifts</p>
-                </div>
-            </div>
-            
-            <div class="quick-actions">
-                <div class="quick-btn" onclick="showSection('shifts')">
-                    <h3><i class="fas fa-users"></i> Manage Shifts</h3>
-                    <p>Add employees to shifts</p>
-                </div>
-                <div class="quick-btn" onclick="showSection('work-details')">
-                    <h3><i class="fas fa-clipboard-list"></i> Log Work</h3>
-                    <p>Record work details</p>
-                </div>
-                <div class="quick-btn admin-only" onclick="showSection('groups')">
-                    <h3><i class="fas fa-layer-group"></i> Create Groups</h3>
-                    <p>Organize employees</p>
-                </div>
-                <div class="quick-btn" onclick="showSection('reports')">
-                    <h3><i class="fas fa-chart-bar"></i> View Reports</h3>
-                    <p>Generate reports</p>
-                </div>
-            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('shifts')">
+                    <i class="fas fa-users"></i>
+                    <span>Shift Management</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('work-details')">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Work Details</span>
+                </a>
+                <a href="#" class="nav-item admin-only" onclick="showSection('groups')">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Groups</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('reports')">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="#" class="nav-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
         </div>
-
-        <!-- Shift Management Section -->
-        <div id="shifts" class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-users"></i> Shift Management</h2>
-                <p>Manage employee shifts and attendance</p>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                <div class="user-profile">
+                    <div class="avatar" id="userAvatar">AD</div>
+                    <div id="userName">Admin User</div>
+                </div>
             </div>
             
-            <div class="shifts-grid">
-                <!-- Shift A -->
-                <div class="shift-card shift-a">
-                    <div class="shift-header">Shift A: 00:30 - 08:30</div>
-                    
-                    <div class="team-section">
-                        <div class="team-title">DUTY IN-CHARGE</div>
-                        <div id="inchargeA"></div>
-                        <button class="btn btn-add" onclick="addEmployee('inchargeA')">
-                            <i class="fas fa-plus"></i> Add In-charge
-                        </button>
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section show">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Total Staff</div>
+                                <div class="stat-value" id="totalStaff">44</div>
+                            </div>
+                            <div class="stat-icon icon-blue">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 12% from last month
+                        </div>
                     </div>
                     
-                    <div class="team-section">
-                        <div class="team-title">DUTY MEMBERS</div>
-                        <div id="membersA"></div>
-                        <button class="btn btn-add" onclick="addEmployee('membersA')">
-                            <i class="fas fa-plus"></i> Add Member
-                        </button>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Active Groups</div>
+                                <div class="stat-value" id="totalGroups">0</div>
+                            </div>
+                            <div class="stat-icon icon-green">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                        </div>
+                        <div class="stat-change negative">
+                            <i class="fas fa-arrow-down"></i> 2% from last month
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Work Entries</div>
+                                <div class="stat-value" id="totalWork">0</div>
+                            </div>
+                            <div class="stat-icon icon-orange">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 8% from last month
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Active Shifts</div>
+                                <div class="stat-value">3</div>
+                            </div>
+                            <div class="stat-icon icon-purple">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 5% from last month
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Shift B -->
-                <div class="shift-card shift-b">
-                    <div class="shift-header">Shift B: 08:00 - 16:00</div>
-                    
-                    <div class="team-section">
-                        <div class="team-title">DUTY IN-CHARGE</div>
-                        <div id="inchargeB"></div>
-                        <button class="btn btn-add" onclick="addEmployee('inchargeB')">
-                            <i class="fas fa-plus"></i> Add In-charge
-                        </button>
+                <div class="quick-actions">
+                    <div class="action-card" onclick="showSection('shifts')">
+                        <div class="action-icon action-1">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="action-title">Manage Shifts</h3>
+                        <p class="action-desc">Add employees to shifts</p>
                     </div>
                     
-                    <div class="team-section">
-                        <div class="team-title">DUTY MEMBERS</div>
-                        <div id="membersB"></div>
-                        <button class="btn btn-add" onclick="addEmployee('membersB')">
-                            <i class="fas fa-plus"></i> Add Member
-                        </button>
+                    <div class="action-card" onclick="showSection('work-details')">
+                        <div class="action-icon action-2">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <h3 class="action-title">Log Work</h3>
+                        <p class="action-desc">Record work details</p>
+                    </div>
+                    
+                    <div class="action-card admin-only" onclick="showSection('groups')">
+                        <div class="action-icon action-3">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h3 class="action-title">Create Groups</h3>
+                        <p class="action-desc">Organize employees</p>
+                    </div>
+                    
+                    <div class="action-card" onclick="showSection('reports')">
+                        <div class="action-icon action-4">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="action-title">View Reports</h3>
+                        <p class="action-desc">Generate reports</p>
                     </div>
                 </div>
                 
-                <!-- Shift C -->
-                <div class="shift-card shift-c">
-                    <div class="shift-header">Shift C: 15:30 - 00:30</div>
-                    
-                    <div class="team-section">
-                        <div class="team-title">DUTY IN-CHARGE</div>
-                        <div id="inchargeC"></div>
-                        <button class="btn btn-add" onclick="addEmployee('inchargeC')">
-                            <i class="fas fa-plus"></i> Add In-charge
-                        </button>
-                    </div>
-                    
-                    <div class="team-section">
-                        <div class="team-title">DUTY MEMBERS</div>
-                        <div id="membersC"></div>
-                        <button class="btn btn-add" onclick="addEmployee('membersC')">
-                            <i class="fas fa-plus"></i> Add Member
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Work Details Section -->
-        <div id="work-details" class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-clipboard-list"></i> Work Details Entry</h2>
-                <p>Log and track work assignments</p>
-            </div>
-            
-            <div class="form-container">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="logTime" class="form-label">Log Time</label>
-                        <input type="datetime-local" id="logTime" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="department" class="form-label">Department</label>
-                        <select id="department" class="form-select">
-                            <option value="">Select Department</option>
-                            <option value="Security">Security</option>
-                            <option value="Maintenance">Maintenance</option>
-                            <option value="Housekeeping">Housekeeping</option>
-                            <option value="Administration">Administration</option>
-                            <option value="Operations">Operations</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="task" class="form-label">Task</label>
-                        <input type="text" id="task" class="form-input" placeholder="Enter task name">
-                    </div>
-                    <div class="form-group">
-                        <label for="assignedShift" class="form-label">Assigned Shift</label>
-                        <select id="assignedShift" class="form-select">
-                            <option value="">Select Shift</option>
-                            <option value="A">Shift A (00:30 - 08:30)</option>
-                            <option value="B">Shift B (08:00 - 16:00)</option>
-                            <option value="C">Shift C (15:30 - 00:30)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="workGroup" class="form-label">Assigned Group</label>
-                        <select id="workGroup" class="form-select" onchange="updateAssignedStaffDropdown(this.value)">
-                            <option value="">Select Group</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="assignedStaffs" class="form-label">Assigned Staff</label>
-                        <select id="assignedStaffs" class="form-select" multiple style="height: 80px;"></select>
-                    </div>
-                    <div class="form-group full-width">
-                        <label for="workDetails" class="form-label">Work Details</label>
-                        <textarea id="workDetails" class="form-input" rows="3" placeholder="Describe the work details..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="attendTime" class="form-label">Attend Time</label>
-                        <input type="time" id="attendTime" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="endTime" class="form-label">End Time</label>
-                        <input type="time" id="endTime" class="form-input">
-                    </div>
-                    <div class="form-group full-width">
-                        <label class="form-label">Status</label>
-                        <div class="status-buttons">
-                            <button type="button" class="status-btn" onclick="selectStatus(this, 'Completed')">
-                                <i class="fas fa-check"></i> Completed
-                            </button>
-                            <button type="button" class="status-btn" onclick="selectStatus(this, 'In Progress')">
-                                <i class="fas fa-spinner"></i> In Progress
-                            </button>
-                            <button type="button" class="status-btn" onclick="selectStatus(this, 'Pending')">
-                                <i class="fas fa-clock"></i> Pending
-                            </button>
-                            <button type="button" class="status-btn" onclick="selectStatus(this, 'On Hold')">
-                                <i class="fas fa-pause"></i> On Hold
+                <div class="shifts-container">
+                    <div class="section-header">
+                        <h2 class="section-title">Today's Shifts</h2>
+                        <div class="button-group">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-plus"></i> New Shift
                             </button>
                         </div>
                     </div>
-                    <div class="form-group full-width">
-                        <label for="reason" class="form-label">Reason (if applicable)</label>
-                        <textarea id="reason" class="form-input" rows="2" placeholder="Enter reason if needed..."></textarea>
+                    
+                    <div class="shifts-grid">
+                        <!-- Shift A -->
+                        <div class="shift-card">
+                            <div class="shift-header shift-a">
+                                Shift A: 00:30 - 08:30
+                            </div>
+                            <div class="shift-body">
+                                <div class="team-section">
+                                    <h3 class="team-title">
+                                        <i class="fas fa-user-tie"></i> Duty In-charge
+                                    </h3>
+                                    <div id="inchargeA"></div>
+                                    <button class="add-btn" onclick="addEmployee('inchargeA')">
+                                        <i class="fas fa-plus"></i> Add In-charge
+                                    </button>
+                                </div>
+                                
+                                <div class="team-section">
+                                    <h3 class="team-title">
+                                        <i class="fas fa-users"></i> Duty Members
+                                    </h3>
+                                    <div id="membersA"></div>
+                                    <button class="add-btn" onclick="addEmployee('membersA')">
+                                        <i class="fas fa-plus"></i> Add Member
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Shift B -->
+                        <div class="shift-card">
+                            <div class="shift-header shift-b">
+                                Shift B: 08:00 - 16:00
+                            </div>
+                            <div class="shift-body">
+                                <div class="team-section">
+                                    <h3 class="team-title">
+                                        <i class="fas fa-user-tie"></i> Duty In-charge
+                                    </h3>
+                                    <div id="inchargeB"></div>
+                                    <button class="add-btn" onclick="addEmployee('inchargeB')">
+                                        <i class="fas fa-plus"></i> Add In-charge
+                                    </button>
+                                </div>
+                                
+                                <div class="team-section">
+                                    <h3 class="team-title">
+                                        <i class="fas fa-users"></i> Duty Members
+                                    </h3>
+                                    <div id="membersB"></div>
+                                    <button class="add-btn" onclick="addEmployee('membersB')">
+                                        <i class="fas fa-plus"></i> Add Member
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Shift C -->
+                        <div class="shift-card">
+                            <div class="shift-header shift-c">
+                                Shift C: 15:30 - 00:30
+                            </div>
+                            <div class="shift-body">
+                                <div class="team-section">
+                                    <h3 class="team-title">
+                                        <i class="fas fa-user-tie"></i> Duty In-charge
+                                    </h3>
+                                    <div id="inchargeC"></div>
+                                    <button class="add-btn" onclick="addEmployee('inchargeC')">
+                                        <i class="fas fa-plus"></i> Add In-charge
+                                    </button>
+                                </div>
+                                
+                                <div class="team-section">
+                                    <h3 class="team-title">
+                                        <i class="fas fa-users"></i> Duty Members
+                                    </h3>
+                                    <div id="membersC"></div>
+                                    <button class="add-btn" onclick="addEmployee('membersC')">
+                                        <i class="fas fa-plus"></i> Add Member
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="saveWorkDetails()">
-                        <i class="fas fa-save"></i> Save Work Details
-                    </button>
-                    <button class="btn btn-secondary" onclick="clearWorkForm()">
-                        <i class="fas fa-redo"></i> Clear Form
-                    </button>
-                </div>
-                
-                <div id="workMessage"></div>
-            </div>
-        </div>
-
-        <!-- Groups Section -->
-        <div id="groups" class="section admin-only">
-            <div class="section-header">
-                <h2><i class="fas fa-layer-group"></i> Group Management</h2>
-                <p>Create and manage employee groups</p>
             </div>
             
-            <div class="form-container">
-                <h3>Create New Group</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="groupName" class="form-label">Group Name</label>
-                        <input type="text" id="groupName" class="form-input" placeholder="Enter group name">
-                    </div>
-                    <div class="form-group">
-                        <label>&nbsp;</label>
-                        <button class="btn btn-success" onclick="createGroup()">
-                            <i class="fas fa-plus"></i> Create Group
+            <!-- Shift Management Section -->
+            <div id="shifts" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Shift Management</h2>
+                    <div class="button-group">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> New Shift
                         </button>
                     </div>
                 </div>
-                <div id="groupMessage"></div>
+                
+                <div class="shifts-grid">
+                    <!-- Shift A -->
+                    <div class="shift-card">
+                        <div class="shift-header shift-a">
+                            Shift A: 00:30 - 08:30
+                        </div>
+                        <div class="shift-body">
+                            <div class="team-section">
+                                <h3 class="team-title">
+                                    <i class="fas fa-user-tie"></i> Duty In-charge
+                                </h3>
+                                <div id="inchargeA2"></div>
+                                <button class="add-btn" onclick="addEmployee('inchargeA2')">
+                                    <i class="fas fa-plus"></i> Add In-charge
+                                </button>
+                            </div>
+                            
+                            <div class="team-section">
+                                <h3 class="team-title">
+                                    <i class="fas fa-users"></i> Duty Members
+                                </h3>
+                                <div id="membersA2"></div>
+                                <button class="add-btn" onclick="addEmployee('membersA2')">
+                                    <i class="fas fa-plus"></i> Add Member
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Shift B -->
+                    <div class="shift-card">
+                        <div class="shift-header shift-b">
+                            Shift B: 08:00 - 16:00
+                        </div>
+                        <div class="shift-body">
+                            <div class="team-section">
+                                <h3 class="team-title">
+                                    <i class="fas fa-user-tie"></i> Duty In-charge
+                                </h3>
+                                <div id="inchargeB2"></div>
+                                <button class="add-btn" onclick="addEmployee('inchargeB2')">
+                                    <i class="fas fa-plus"></i> Add In-charge
+                                </button>
+                            </div>
+                            
+                            <div class="team-section">
+                                <h3 class="team-title">
+                                    <i class="fas fa-users"></i> Duty Members
+                                </h3>
+                                <div id="membersB2"></div>
+                                <button class="add-btn" onclick="addEmployee('membersB2')">
+                                    <i class="fas fa-plus"></i> Add Member
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Shift C -->
+                    <div class="shift-card">
+                        <div class="shift-header shift-c">
+                            Shift C: 15:30 - 00:30
+                        </div>
+                        <div class="shift-body">
+                            <div class="team-section">
+                                <h3 class="team-title">
+                                    <i class="fas fa-user-tie"></i> Duty In-charge
+                                </h3>
+                                <div id="inchargeC2"></div>
+                                <button class="add-btn" onclick="addEmployee('inchargeC2')">
+                                    <i class="fas fa-plus"></i> Add In-charge
+                                </button>
+                            </div>
+                            
+                            <div class="team-section">
+                                <h3 class="team-title">
+                                    <i class="fas fa-users"></i> Duty Members
+                                </h3>
+                                <div id="membersC2"></div>
+                                <button class="add-btn" onclick="addEmployee('membersC2')">
+                                    <i class="fas fa-plus"></i> Add Member
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="form-container">
-                <h3>Manage Groups</h3>
-                <div class="form-grid">
+            <!-- Work Details Section -->
+            <div id="work-details" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Work Details Entry</h2>
+                    <div class="button-group">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-history"></i> View History
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-container">
+                    <h3 class="form-title">New Work Entry</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="logTime" class="form-label">Log Time</label>
+                            <input type="datetime-local" id="logTime">
+                        </div>
+                        <div class="form-group">
+                            <label for="department" class="form-label">Department</label>
+                            <select id="department">
+                                <option value="">Select Department</option>
+                                <option value="Security">Security</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Housekeeping">Housekeeping</option>
+                                <option value="Administration">Administration</option>
+                                <option value="Operations">Operations</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="task" class="form-label">Task</label>
+                            <input type="text" id="task" placeholder="Enter task name">
+                        </div>
+                        <div class="form-group">
+                            <label for="assignedGroup" class="form-label">Assigned Group</label>
+                            <select id="assignedGroup" onchange="updateAssignedStaffDropdown(this.value)">
+                                <option value="">Select Group</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="assignedShift" class="form-label">Assigned Shift</label>
+                            <select id="assignedShift">
+                                <option value="">Select Shift</option>
+                                <option value="A">Shift A (00:30 - 08:30)</option>
+                                <option value="B">Shift B (08:00 - 16:00)</option>
+                                <option value="C">Shift C (15:30 - 00:30)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="assignedStaffs" class="form-label">Assigned Staff</label>
+                            <select id="assignedStaffs" multiple style="height: 100px;"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="attendTime" class="form-label">Attend Time</label>
+                            <input type="time" id="attendTime">
+                        </div>
+                        <div class="form-group">
+                            <label for="endTime" class="form-label">End Time</label>
+                            <input type="time" id="endTime">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Status</label>
+                            <div class="status-buttons">
+                                <button type="button" class="status-btn" onclick="selectStatus(this, 'Completed')">
+                                    <i class="fas fa-check-circle"></i> Completed
+                                </button>
+                                <button type="button" class="status-btn" onclick="selectStatus(this, 'In Progress')">
+                                    <i class="fas fa-spinner"></i> In Progress
+                                </button>
+                                <button type="button" class="status-btn" onclick="selectStatus(this, 'Pending')">
+                                    <i class="fas fa-clock"></i> Pending
+                                </button>
+                                <button type="button" class="status-btn" onclick="selectStatus(this, 'On Hold')">
+                                    <i class="fas fa-pause-circle"></i> On Hold
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="workDetails" class="form-label">Work Details</label>
+                            <textarea id="workDetails" rows="3" placeholder="Describe the work details..."></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="reason" class="form-label">Reason (if needed)</label>
+                            <textarea id="reason" rows="2" placeholder="Enter reason if needed..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="saveWorkDetails()">
+                            <i class="fas fa-save"></i> Save Work Details
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearWorkForm()">
+                            <i class="fas fa-undo"></i> Clear Form
+                        </button>
+                    </div>
+                    
+                    <div id="workMessage"></div>
+                </div>
+            </div>
+            
+            <!-- Groups Section -->
+            <div id="groups" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Group Management</h2>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="showCreateGroupForm()">
+                            <i class="fas fa-plus"></i> New Group
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-container" id="createGroupForm">
+                    <h3 class="form-title">Create New Group</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="groupName" class="form-label">Group Name</label>
+                            <input type="text" id="groupName" placeholder="Enter group name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-success" onclick="createGroup()">
+                                <i class="fas fa-check"></i> Create Group
+                            </button>
+                        </div>
+                    </div>
+                    <div id="groupMessage"></div>
+                </div>
+                
+                <div class="form-container">
+                    <h3 class="form-title">Manage Groups</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="selectGroup" class="form-label">Select Group</label>
+                            <select id="selectGroup" onchange="showGroupMembers()">
+                                <option value="">Select a group</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="availableStaff" class="form-label">Available Staff</label>
+                            <select id="availableStaff" multiple style="height: 200px;"></select>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
-                        <label for="selectGroup" class="form-label">Select Group</label>
-                        <select id="selectGroup" class="form-select" onchange="showGroupMembers()">
-                            <option value="">Select a group</option>
-                        </select>
+                        <label class="form-label">Group Members</label>
+                        <div id="groupMembers" class="group-members">
+                            Select a group to view members
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="availableStaff" class="form-label">Available Staff</label>
-                        <select id="availableStaff" class="form-select" multiple style="height: 120px;"></select>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="addToGroup()">
+                            <i class="fas fa-plus"></i> Add to Group
+                        </button>
+                        <button class="btn btn-danger" onclick="removeFromGroup()">
+                            <i class="fas fa-minus"></i> Remove from Group
+                        </button>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Group Members</label>
-                    <div id="groupMembers" class="group-members">
-                        Select a group to view members
-                    </div>
-                </div>
-                
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="addToGroup()">
-                        <i class="fas fa-plus"></i> Add to Group
-                    </button>
-                    <button class="btn btn-warning" onclick="removeFromGroup()">
-                        <i class="fas fa-minus"></i> Remove from Group
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Reports Section -->
-        <div id="reports" class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-bar"></i> Reports & Data</h2>
-                <p>Generate reports and manage system data</p>
-            </div>
-            
-            <div class="dashboard-cards">
-                <div class="card">
-                    <h3>Total Employees</h3>
-                    <div class="number">44</div>
-                </div>
-                <div class="card">
-                    <h3>Work Entries</h3>
-                    <div class="number" id="reportWorkEntries">0</div>
-                </div>
-                <div class="card">
-                    <h3>Active Groups</h3>
-                    <div class="number" id="reportActiveGroups">0</div>
-                </div>
-                <div class="card">
-                    <h3>System Status</h3>
-                    <div class="number">🟢</div>
                 </div>
             </div>
             
-            <div class="form-container">
-                <div class="button-group">
-                    <button class="btn btn-success" onclick="saveAllData()">
-                        <i class="fas fa-save"></i> Save All Data
-                    </button>
-                    <button class="btn btn-warning" onclick="downloadReport()">
-                        <i class="fas fa-download"></i> Download Report
-                    </button>
-                    <button class="btn btn-danger admin-only" onclick="clearAllForms()">
-                        <i class="fas fa-trash"></i> Clear All Data
-                    </button>
+            <!-- Reports Section -->
+            <div id="reports" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Reports & Analytics</h2>
+                    <div class="button-group">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                    </div>
                 </div>
                 
-                <div id="reportMessage"></div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Total Employees</div>
+                                <div class="stat-value">44</div>
+                            </div>
+                            <div class="stat-icon icon-blue">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 12% from last month
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Work Entries</div>
+                                <div class="stat-value" id="reportWorkEntries">0</div>
+                            </div>
+                            <div class="stat-icon icon-orange">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 8% from last month
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Active Groups</div>
+                                <div class="stat-value" id="reportActiveGroups">0</div>
+                            </div>
+                            <div class="stat-icon icon-green">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                        </div>
+                        <div class="stat-change negative">
+                            <i class="fas fa-arrow-down"></i> 2% from last month
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">System Status</div>
+                                <div class="stat-value">🟢</div>
+                            </div>
+                            <div class="stat-icon icon-purple">
+                                <i class="fas fa-server"></i>
+                            </div>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-check-circle"></i> All systems operational
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-container">
+                    <div class="button-group">
+                        <button class="btn btn-success" onclick="saveAllData()">
+                            <i class="fas fa-save"></i> Save All Data
+                        </button>
+                        <button class="btn btn-primary" onclick="downloadReport()">
+                            <i class="fas fa-download"></i> Download Report
+                        </button>
+                        <button class="btn btn-danger" onclick="clearAllForms()">
+                            <i class="fas fa-trash"></i> Clear All Data
+                        </button>
+                    </div>
+                    
+                    <div id="reportMessage"></div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    // User data with roles
-    const users = [
-        { username: 'admin', password: 'admin123', name: 'Admin User', role: 'admin' },
-        { username: 'manager', password: 'manager123', name: 'Manager User', role: 'manager' },
-        { username: 'staff1', password: 'staff123', name: 'Staff Member', role: 'staff' }
-    ];
+    <script>
+        // User data with roles
+        const users = [
+            { username: 'admin', password: 'admin123', name: 'Admin User', role: 'admin' },
+            { username: 'manager', password: 'manager123', name: 'Manager User', role: 'manager' },
+            { username: 'staff1', password: 'staff123', name: 'Staff Member', role: 'staff' }
+        ];
 
-    // Staff data with assignedToGroup field
-    const staff = [
-        { name: 'Shukh Hussain', rc: 'T941', assignedToGroup: null },
-        { name: 'Hassan Khaleel', rc: 'A-1733', assignedToGroup: null },
-        { name: 'Ahmed Neesham', rc: '26552', assignedToGroup: null },
-        { name: 'Ali Samaah', rc: 'A-2352', assignedToGroup: null },
-        { name: 'Umar Yoosuf', rc: '12283', assignedToGroup: null },
-        { name: 'Abdul Rauf Hamid', rc: 'A-1584', assignedToGroup: null },
-        { name: 'Abdulla Hamdhan', rc: 'A-2453', assignedToGroup: null },
-        { name: 'Abdul Naeem', rc: 'A-2658', assignedToGroup: null },
-        { name: 'Ahmed Mohamed', rc: 'A-2718', assignedToGroup: null },
-        { name: 'Mohamed Adam', rc: 'A-3030', assignedToGroup: null },
-        { name: 'Moosa Solah', rc: 'A-3055', assignedToGroup: null },
-        { name: 'Ahmed Naseem', rc: 'A-3648', assignedToGroup: null },
-        { name: 'Hussain Suneel', rc: 'A-6453', assignedToGroup: null },
-        { name: 'Saaidh Abdul Raheem', rc: 'A-6623', assignedToGroup: null },
-        { name: 'Hussain Abdul Rahman', rc: 'A-6634', assignedToGroup: null },
-        { name: 'Safuraaz Mohamed', rc: 'A-7617', assignedToGroup: null },
-        { name: 'Mohamed Irfan Ibrahim', rc: 'A-7619', assignedToGroup: null },
-        { name: 'Ahuzam Mohamed', rc: 'A-7620', assignedToGroup: null },
-        { name: 'Ibthihaal Hassan', rc: 'A-7646', assignedToGroup: null },
-        { name: 'Ahmed Zareer', rc: 'A-7658', assignedToGroup: null },
-        { name: 'Mohamed Hannadh', rc: 'A-7301', assignedToGroup: null },
-        { name: 'Ahmed Zareer', rc: 'A-7735', assignedToGroup: null },
-        { name: 'Abdul Muhuthee Abdul Azeez', rc: 'A-7737', assignedToGroup: null },
-        { name: 'Ahmed Haneef', rc: 'A-7738', assignedToGroup: null },
-        { name: 'Ali Akram', rc: 'A-7887', assignedToGroup: null },
-        { name: 'Abdul Ali', rc: 'A-1384', assignedToGroup: null },
-        { name: 'Fauzaan Ahmed fayaaz', rc: 'A-6331', assignedToGroup: null },
-        { name: 'Mohamed Ashraf', rc: 'A-8332', assignedToGroup: null },
-        { name: 'Abdulla Shuraim Bin Nooh', rc: 'A-6605', assignedToGroup: null },
-        { name: 'Ali Mohamed', rc: 'A-8632', assignedToGroup: null },
-        { name: 'Ahmed Siaf Mohamed Hussani', rc: 'A-8611', assignedToGroup: null },
-        { name: 'Gamaaldeen Fathuhee', rc: 'A-3051', assignedToGroup: null },
-        { name: 'Maazin Waheed', rc: 'A-3108', assignedToGroup: null },
-        { name: 'Abdul Rahman Easa', rc: 'A-3173', assignedToGroup: null },
-        { name: 'Meesum Abdul Majeed', rc: 'A-9451', assignedToGroup: null },
-        { name: 'Ahmed Afnan', rc: 'A-8385', assignedToGroup: null },
-        { name: 'Afwan Abdulla Naseer', rc: 'A-10356', assignedToGroup: null },
-        { name: 'Bashar Ahmed', rc: 'A-10222', assignedToGroup: null },
-        { name: 'Umar Zaahir', rc: 'A-2688', assignedToGroup: null },
-        { name: 'Rasham Shifaun Abdulla', rc: 'A-10218', assignedToGroup: null },
-        { name: 'Yusuf Alain Bin Azim', rc: 'A-10383', assignedToGroup: null },
-        { name: 'Abdul Ali', rc: 'A-8713', assignedToGroup: null },
-        { name: 'Mohamed Sharan', rc: 'A-8813', assignedToGroup: null },
-        { name: 'Ahmed Tholal', rc: 'A-11383', assignedToGroup: null },
-        { name: 'Moosa Naeem', rc: 'A-1389', assignedToGroup: null }
-    ];
-
-    // Global variables
-    let currentUser = null;
-    let groups = {};
-    let workEntries = [];
-    let selectedStatus = '';
-
-    // Initialize page when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        // Page starts with login screen visible
-    });
-
-    // Quick login function for testing
-    function quickLogin(username) {
-        const userCredentials = {
-            'admin': 'admin123',
-            'manager': 'manager123',
-            'staff1': 'staff123'
-        };
+        // Staff data with assignedToGroup field
+        const staff = [
+            { name: 'Shukh Hussain', rc: 'T941', assignedToGroup: null },
+            { name: 'Hassan Khaleel', rc: 'A-1733', assignedToGroup: null },
+            { name: 'Ahmed Neesham', rc: '26552', assignedToGroup: null },
+            { name: 'Ali Samaah', rc: 'A-2352', assignedToGroup: null },
+            { name: 'Umar Yoosuf', rc: '12283', assignedToGroup: null },
+            { name: 'Abdul Rauf Hamid', rc: 'A-1584', assignedToGroup: null },
+            { name: 'Abdulla Hamdhan', rc: 'A-2453', assignedToGroup: null },
+            { name: 'Abdul Naeem', rc: 'A-2658', assignedToGroup: null },
+            { name: 'Ahmed Mohamed', rc: 'A-2718', assignedToGroup: null },
+            { name: 'Mohamed Adam', rc: 'A-3030', assignedToGroup: null },
+            { name: 'Moosa Solah', rc: 'A-3055', assignedToGroup: null },
+            { name: 'Ahmed Naseem', rc: 'A-3648', assignedToGroup: null },
+            { name: 'Hussain Suneel', rc: 'A-6453', assignedToGroup: null },
+            { name: 'Saaidh Abdul Raheem', rc: 'A-6623', assignedToGroup: null },
+            { name: 'Hussain Abdul Rahman', rc: 'A-6634', assignedToGroup: null },
+            { name: 'Safuraaz Mohamed', rc: 'A-7617', assignedToGroup: null },
+            { name: 'Mohamed Irfan Ibrahim', rc: 'A-7619', assignedToGroup: null },
+            { name: 'Ahuzam Mohamed', rc: 'A-7620', assignedToGroup: null },
+            { name: 'Ibthihaal Hassan', rc: 'A-7646', assignedToGroup: null },
+            { name: 'Ahmed Zareer', rc: 'A-7658', assignedToGroup: null },
+            { name: 'Mohamed Hannadh', rc: 'A-7301', assignedToGroup: null },
+            { name: 'Ahmed Zareer', rc: 'A-7735', assignedToGroup: null },
+            { name: 'Abdul Muhuthee Abdul Azeez', rc: 'A-7737', assignedToGroup: null },
+            { name: 'Ahmed Haneef', rc: 'A-7738', assignedToGroup: null },
+            { name: 'Ali Akram', rc: 'A-7887', assignedToGroup: null },
+            { name: 'Abdul Ali', rc: 'A-1384', assignedToGroup: null },
+            { name: 'Fauzaan Ahmed fayaaz', rc: 'A-6331', assignedToGroup: null },
+            { name: 'Mohamed Ashraf', rc: 'A-8332', assignedToGroup: null },
+            { name: 'Abdulla Shuraim Bin Nooh', rc: 'A-6605', assignedToGroup: null },
+            { name: 'Ali Mohamed', rc: 'A-8632', assignedToGroup: null },
+            { name: 'Ahmed Siaf Mohamed Hussani', rc: 'A-8611', assignedToGroup: null },
+            { name: 'Gamaaldeen Fathuhee', rc: 'A-3051', assignedToGroup: null },
+            { name: 'Maazin Waheed', rc: 'A-3108', assignedToGroup: null },
+            { name: 'Abdul Rahman Easa', rc: 'A-3173', assignedToGroup: null },
+            { name: 'Meesum Abdul Majeed', rc: 'A-9451', assignedToGroup: null },
+            { name: 'Ahmed Afnan', rc: 'A-8385', assignedToGroup: null },
+            { name: 'Afwan Abdulla Naseer', rc: 'A-10356', assignedToGroup: null },
+            { name: 'Bashar Ahmed', rc: 'A-10222', assignedToGroup: null },
+            { name: 'Umar Zaahir', rc: 'A-2688', assignedToGroup: null },
+            { name: 'Rasham Shifaun Abdulla', rc: 'A-10218', assignedToGroup: null },
+            { name: 'Yusuf Alain Bin Azim', rc: 'A-10383', assignedToGroup: null },
+            { name: 'Abdul Ali', rc: 'A-8713', assignedToGroup: null },
+            { name: 'Mohamed Sharan', rc: 'A-8813', assignedToGroup: null },
+            { name: 'Ahmed Tholal', rc: 'A-11383', assignedToGroup: null },
+            { name: 'Moosa Naeem', rc: 'A-1389', assignedToGroup: null }
+        ];
         
-        document.getElementById('loginUsername').value = username;
-        document.getElementById('loginPassword').value = userCredentials[username];
+        // Global variables
+        let groups = {};
+        let workEntries = [];
+        let selectedStatus = '';
         
-        // Trigger login
-        const loginEvent = new Event('submit');
-        document.querySelector('.login-form').dispatchEvent(loginEvent);
-    }
-
-    // Login function
-    function handleLogin(event) {
-        event.preventDefault();
-        
-        const username = document.getElementById('loginUsername').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
-        
-        console.log('Login attempt:', username, password); // Debug log
-        
-        if (!username || !password) {
-            alert('Please enter both username and password');
-            return;
-        }
-        
-        const user = users.find(u => u.username === username && u.password === password);
-        
-        console.log('User found:', user); // Debug log
-        
-        if (user) {
-            currentUser = user;
+        // Initialize login form
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
             
-            // Hide login screen and show app
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appContainer').classList.remove('hidden');
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const messageDiv = document.getElementById('loginMessage');
             
-            // Update user profile in header
-            document.getElementById('userAvatar').textContent = user.name.split(' ').map(n => n[0]).join('');
-            document.getElementById('userName').textContent = user.name;
-            document.getElementById('userRole').textContent = user.role;
+            // Find matching user
+            const user = users.find(u => u.username === username && u.password === password);
             
-            // Hide admin-only sections for staff users
-            if (user.role === 'staff') {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+            if (user) {
+                // Successful login
+                messageDiv.textContent = 'Login successful! Redirecting...';
+                messageDiv.style.color = 'green';
+                
+                // Store user in session
+                sessionStorage.setItem('currentUser', JSON.stringify(user));
+                
+                // Hide login and show app (after brief delay)
+                setTimeout(() => {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('appContainer').style.display = 'grid';
+                    initializeApp();
+                }, 1000);
             } else {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+                // Failed login
+                messageDiv.textContent = 'Invalid username or password';
+                messageDiv.style.color = 'red';
             }
-            
-            // Initialize the app
-            initializeApp();
-            
-            console.log('Login successful for:', user.name);
-        } else {
-            alert('Invalid username or password.\n\nTry:\nadmin / admin123\nmanager / manager123\nstaff1 / staff123');
-        }
-    }
+        });
 
-    // Logout function
-    function handleLogout() {
-        if (confirm('Are you sure you want to logout?')) {
-            currentUser = null;
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('appContainer').classList.add('hidden');
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem('currentUser');
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('loginUsername').value = '';
             document.getElementById('loginPassword').value = '';
+            document.getElementById('loginMessage').textContent = '';
         }
-    }
 
-    // Initialize app after login
-    function initializeApp() {
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
-        document.getElementById('logTime').value = new Date().toISOString().slice(0, 16);
-        populateStaffDropdowns();
-        updateDashboard();
-        updateWorkGroupDropdown();
-    }
-
-    // Navigation function
-    function showSection(sectionId) {
-        // Hide all sections
-        const sections = document.querySelectorAll('.section');
-        sections.forEach(section => section.classList.remove('show'));
-        
-        // Remove active class from all nav buttons
-        const navBtns = document.querySelectorAll('.nav-btn');
-        navBtns.forEach(btn => btn.classList.remove('active'));
-        
-        // Show selected section
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) {
-            targetSection.classList.add('show');
-        }
-        
-        // Add active class to the button that was clicked
-        const clickedBtn = Array.from(navBtns).find(btn => 
-            btn.getAttribute('onclick').includes(sectionId)
-        );
-        if (clickedBtn) {
-            clickedBtn.classList.add('active');
-        }
-        
-        // Update dashboard when showing it
-        if (sectionId === 'dashboard') {
-            updateDashboard();
-        }
-    }
-    
-    // Update dashboard statistics
-    function updateDashboard() {
-        document.getElementById('totalGroups').textContent = Object.keys(groups).length;
-        document.getElementById('totalWork').textContent = workEntries.length;
-        document.getElementById('reportWorkEntries').textContent = workEntries.length;
-        document.getElementById('reportActiveGroups').textContent = Object.keys(groups).length;
-    }
-    
-    // Populate staff dropdowns
-    function populateStaffDropdowns() {
-        updateAvailableStaffDropdown();
-    }
-    
-    // Update available staff dropdown to show only unassigned staff
-    function updateAvailableStaffDropdown() {
-        const availableStaff = document.getElementById('availableStaff');
-        availableStaff.innerHTML = '';
-        
-        staff.forEach(person => {
-            if (!person.assignedToGroup) {
-                const option = document.createElement('option');
-                option.value = person.rc;
-                option.textContent = `${person.name} (${person.rc})`;
-                availableStaff.appendChild(option);
-            }
-        });
-    }
-
-    // Update work group dropdown
-    function updateWorkGroupDropdown() {
-        const workGroup = document.getElementById('workGroup');
-        workGroup.innerHTML = '<option value="">Select Group</option>';
-        
-        Object.keys(groups).forEach(groupName => {
-            const option = document.createElement('option');
-            option.value = groupName;
-            option.textContent = groupName;
-            workGroup.appendChild(option);
-        });
-    }
-
-    // Update assigned staff dropdown based on selected group
-    function updateAssignedStaffDropdown(groupName) {
-        const assignedStaffs = document.getElementById('assignedStaffs');
-        assignedStaffs.innerHTML = '';
-        
-        if (!groupName) return;
-        
-        if (groups[groupName]) {
-            groups[groupName].forEach(rc => {
-                const person = staff.find(s => s.rc === rc);
-                if (person) {
-                    const option = document.createElement('option');
-                    option.value = person.rc;
-                    option.textContent = `${person.name} (${person.rc})`;
-                    assignedStaffs.appendChild(option);
-                }
-            });
-        }
-    }
-    
-    // Add employee to shift
-    function addEmployee(containerId) {
-        const container = document.getElementById(containerId);
-        const row = document.createElement('div');
-        row.className = 'employee-row';
-        
-        let staffOptions = '<option value="">Select Employee</option>';
-        staff.forEach(person => {
-            staffOptions += `<option value="${person.rc}">${person.name} (${person.rc})</option>`;
-        });
-        
-        row.innerHTML = `
-            <select class="form-select" onchange="fillRC(this)">
-                ${staffOptions}
-            </select>
-            <input type="text" class="form-input" placeholder="RC #" readonly>
-            <select class="form-select">
-                <option value="">Status</option>
-                <option value="Present">Present</option>
-                <option value="Absent">Absent</option>
-                <option value="Late">Late</option>
-                <option value="SL">Sick Leave</option>
-                <option value="FRL">FRL</option>
-            </select>
-        `;
-        
-        container.appendChild(row);
-    }
-    
-    // Fill RC number when employee is selected
-    function fillRC(select) {
-        const rc = select.value;
-        const rcInput = select.parentElement.querySelector('input');
-        rcInput.value = rc;
-    }
-    
-    // Create new group
-    function createGroup() {
-        if (currentUser.role === 'staff') {
-            showMessage(document.getElementById('groupMessage'), 'Only admins and managers can create groups', 'error');
-            return;
-        }
-        
-        const groupName = document.getElementById('groupName').value.trim();
-        const messageDiv = document.getElementById('groupMessage');
-        
-        if (!groupName) {
-            showMessage(messageDiv, 'Please enter a group name', 'error');
-            return;
-        }
-        
-        if (groups[groupName]) {
-            showMessage(messageDiv, 'Group already exists', 'error');
-            return;
-        }
-        
-        groups[groupName] = [];
-        document.getElementById('groupName').value = '';
-        updateGroupSelect();
-        updateWorkGroupDropdown();
-        updateDashboard();
-        showMessage(messageDiv, `Group "${groupName}" created successfully!`, 'success');
-    }
-    
-    // Update group selection dropdown
-    function updateGroupSelect() {
-        const select = document.getElementById('selectGroup');
-        select.innerHTML = '<option value="">Select a group</option>';
-        
-        Object.keys(groups).forEach(groupName => {
-            const option = document.createElement('option');
-            option.value = groupName;
-            option.textContent = groupName;
-            select.appendChild(option);
-        });
-    }
-    
-    // Show group members
-    function showGroupMembers() {
-        const groupName = document.getElementById('selectGroup').value;
-        const membersDiv = document.getElementById('groupMembers');
-        
-        if (!groupName) {
-            membersDiv.innerHTML = 'Select a group to view members';
-            return;
-        }
-        
-        const members = groups[groupName];
-        if (members.length === 0) {
-            membersDiv.innerHTML = 'No members in this group';
-            return;
-        }
-        
-        let html = '';
-        members.forEach(rc => {
-            const person = staff.find(s => s.rc === rc);
-            if (person) {
-                html += `<span class="member-tag">
-                    ${person.name} (${person.rc})
-                    <button class="remove-btn" onclick="removeFromGroupDirect('${rc}')" title="Remove">×</button>
-                </span>`;
-            }
-        });
-        
-        membersDiv.innerHTML = html;
-    }
-    
-    // Add selected staff to group
-    function addToGroup() {
-        const groupName = document.getElementById('selectGroup').value;
-        const selectedOptions = document.getElementById('availableStaff').selectedOptions;
-        
-        if (!groupName) {
-            alert('Please select a group first');
-            return;
-        }
-        
-        if (selectedOptions.length === 0) {
-            alert('Please select staff members to add');
-            return;
-        }
-        
-        Array.from(selectedOptions).forEach(option => {
-            const rc = option.value;
-            const staffMember = staff.find(s => s.rc === rc);
+        // Initialize the application
+        function initializeApp() {
+            // Get logged in user
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
             
-            // Check if staff is already in a group
-            if (staffMember.assignedToGroup && staffMember.assignedToGroup !== groupName) {
-                alert(`${staffMember.name} is already assigned to group ${staffMember.assignedToGroup}`);
+            if (!currentUser) {
+                window.location.reload();
                 return;
             }
             
-            if (!groups[groupName].includes(rc)) {
-                groups[groupName].push(rc);
-                staffMember.assignedToGroup = groupName;
+            // Update UI based on role
+            if (currentUser.role === 'staff') {
+                // Hide admin-only sections
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.style.display = 'none';
+                });
             }
-        });
-        
-        showGroupMembers();
-        updateDashboard();
-        updateAvailableStaffDropdown();
-        updateWorkGroupDropdown();
-        alert(`${selectedOptions.length} member(s) added to ${groupName}`);
-    }
-    
-    // Remove from group
-    function removeFromGroup() {
-        const groupName = document.getElementById('selectGroup').value;
-        const selectedOptions = document.getElementById('availableStaff').selectedOptions;
-        
-        if (!groupName) {
-            alert('Please select a group first');
-            return;
+            
+            // Update user display
+            const avatar = document.getElementById('userAvatar');
+            const userNameDisplay = document.getElementById('userName');
+            
+            if (avatar && userNameDisplay) {
+                const initials = currentUser.name.split(' ').map(n => n[0]).join('');
+                avatar.textContent = initials;
+                userNameDisplay.textContent = currentUser.name;
+            }
+            
+            // Initialize the rest of your app
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+            document.getElementById('logTime').value = new Date().toISOString().slice(0, 16);
+            populateStaffDropdowns();
+            updateDashboard();
+            populateGroupDropdowns();
+        }
+
+        // Populate staff dropdowns
+        function populateStaffDropdowns() {
+            updateAvailableStaffDropdown();
+            
+            // Initialize assigned staff dropdown (empty until group is selected)
+            const assignedStaffs = document.getElementById('assignedStaffs');
+            assignedStaffs.innerHTML = '';
+        }
+
+        // Update available staff dropdown to show only unassigned staff
+        function updateAvailableStaffDropdown() {
+            const availableStaff = document.getElementById('availableStaff');
+            availableStaff.innerHTML = '';
+            
+            staff.forEach(person => {
+                if (!person.assignedToGroup) {
+                    const option = document.createElement('option');
+                    option.value = person.rc;
+                    option.textContent = `${person.name} (${person.rc})`;
+                    availableStaff.appendChild(option);
+                }
+            });
+        }
+
+        // Populate group dropdowns
+        function populateGroupDropdowns() {
+            const assignedGroupSelect = document.getElementById('assignedGroup');
+            const selectGroup = document.getElementById('selectGroup');
+            
+            // Clear existing options
+            assignedGroupSelect.innerHTML = '<option value="">Select Group</option>';
+            selectGroup.innerHTML = '<option value="">Select a group</option>';
+            
+            // Add group options
+            Object.keys(groups).forEach(groupName => {
+                const option1 = document.createElement('option');
+                option1.value = groupName;
+                option1.textContent = groupName;
+                assignedGroupSelect.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = groupName;
+                option2.textContent = groupName;
+                selectGroup.appendChild(option2);
+            });
+        }
+
+        // Update assigned staff dropdown based on selected group
+        function updateAssignedStaffDropdown(groupName) {
+            const assignedStaffs = document.getElementById('assignedStaffs');
+            assignedStaffs.innerHTML = '';
+            
+            if (!groupName) return;
+            
+            if (groups[groupName]) {
+                groups[groupName].forEach(rc => {
+                    const person = staff.find(s => s.rc === rc);
+                    if (person) {
+                        const option = document.createElement('option');
+                        option.value = person.rc;
+                        option.textContent = `${person.name} (${person.rc})`;
+                        assignedStaffs.appendChild(option);
+                    }
+                });
+            }
+        }
+
+        // Navigation function
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.style.display = 'none');
+            
+            // Remove active class from all nav items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+            
+            // Add active class to the clicked nav item
+            const clickedItem = Array.from(navItems).find(item => 
+                item.getAttribute('onclick').includes(sectionId)
+            );
+            if (clickedItem) {
+                clickedItem.classList.add('active');
+            }
+            
+            // Update page title
+            const pageTitle = document.getElementById('pageTitle');
+            switch(sectionId) {
+                case 'dashboard':
+                    pageTitle.textContent = 'Dashboard';
+                    break;
+                case 'shifts':
+                    pageTitle.textContent = 'Shift Management';
+                    break;
+                case 'work-details':
+                    pageTitle.textContent = 'Work Details';
+                    break;
+                case 'groups':
+                    pageTitle.textContent = 'Group Management';
+                    break;
+                case 'reports':
+                    pageTitle.textContent = 'Reports & Analytics';
+                    break;
+            }
+            
+            // Update dashboard when showing it
+            if (sectionId === 'dashboard') {
+                updateDashboard();
+            }
         }
         
-        Array.from(selectedOptions).forEach(option => {
-            const rc = option.value;
+        // Update dashboard statistics
+        function updateDashboard() {
+            document.getElementById('totalGroups').textContent = Object.keys(groups).length;
+            document.getElementById('totalWork').textContent = workEntries.length;
+            document.getElementById('reportWorkEntries').textContent = workEntries.length;
+            document.getElementById('reportActiveGroups').textContent = Object.keys(groups).length;
+        }
+        
+        // Add employee to shift
+        function addEmployee(containerId) {
+            const container = document.getElementById(containerId);
+            const row = document.createElement('div');
+            row.className = 'employee-row';
+            
+            let staffOptions = '<option value="">Select Employee</option>';
+            staff.forEach(person => {
+                staffOptions += `<option value="${person.rc}">${person.name} (${person.rc})</option>`;
+            });
+            
+            row.innerHTML = `
+                <select onchange="fillRC(this)" class="form-select">
+                    ${staffOptions}
+                </select>
+                <input type="text" placeholder="RC #" readonly class="form-input">
+                <select class="form-select">
+                    <option value="">Status</option>
+                    <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
+                    <option value="Late">Late</option>
+                    <option value="SL">Sick Leave</option>
+                    <option value="FRL">FRL</option>
+                </select>
+            `;
+            
+            container.appendChild(row);
+        }
+        
+        // Fill RC number when employee is selected
+        function fillRC(select) {
+            const rc = select.value;
+            const rcInput = select.parentElement.querySelector('input');
+            rcInput.value = rc;
+        }
+        
+        // Create new group
+        function createGroup() {
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+            
+            if (currentUser.role === 'staff') {
+                alert('Only admins and managers can create groups');
+                return;
+            }
+            
+            const groupName = document.getElementById('groupName').value.trim();
+            const messageDiv = document.getElementById('groupMessage');
+            
+            if (!groupName) {
+                showMessage(messageDiv, 'Please enter a group name', 'error');
+                return;
+            }
+            
+            if (groups[groupName]) {
+                showMessage(messageDiv, 'Group already exists', 'error');
+                return;
+            }
+            
+            groups[groupName] = [];
+            document.getElementById('groupName').value = '';
+            populateGroupDropdowns();
+            updateDashboard();
+            showMessage(messageDiv, `Group "${groupName}" created successfully!`, 'success');
+        }
+        
+        // Show group members
+        function showGroupMembers() {
+            const groupName = document.getElementById('selectGroup').value;
+            const membersDiv = document.getElementById('groupMembers');
+            
+            if (!groupName) {
+                membersDiv.innerHTML = 'Select a group to view members';
+                return;
+            }
+            
+            const members = groups[groupName];
+            if (!members || members.length === 0) {
+                membersDiv.innerHTML = 'No members in this group';
+                return;
+            }
+            
+            let html = '';
+            members.forEach(rc => {
+                const person = staff.find(s => s.rc === rc);
+                if (person) {
+                    html += `<span class="member-tag">
+                        ${person.name} (${person.rc})
+                        <button class="remove-btn" onclick="removeFromGroupDirect('${rc}')" title="Remove">×</button>
+                    </span>`;
+                }
+            });
+            
+            membersDiv.innerHTML = html;
+        }
+        
+        // Add selected staff to group
+        function addToGroup() {
+            const groupName = document.getElementById('selectGroup').value;
+            const selectedOptions = document.getElementById('availableStaff').selectedOptions;
+            
+            if (!groupName) {
+                alert('Please select a group first');
+                return;
+            }
+            
+            if (selectedOptions.length === 0) {
+                alert('Please select staff members to add');
+                return;
+            }
+            
+            Array.from(selectedOptions).forEach(option => {
+                const rc = option.value;
+                const staffMember = staff.find(s => s.rc === rc);
+                
+                // Check if staff is already in a group
+                if (staffMember.assignedToGroup && staffMember.assignedToGroup !== groupName) {
+                    alert(`${staffMember.name} is already assigned to group ${staffMember.assignedToGroup}`);
+                    return;
+                }
+                
+                if (!groups[groupName].includes(rc)) {
+                    groups[groupName].push(rc);
+                    staffMember.assignedToGroup = groupName;
+                }
+            });
+            
+            showGroupMembers();
+            updateDashboard();
+            updateAvailableStaffDropdown();
+            alert(`${selectedOptions.length} member(s) added to ${groupName}`);
+        }
+        
+        // Remove from group
+        function removeFromGroup() {
+            const groupName = document.getElementById('selectGroup').value;
+            const selectedOptions = document.getElementById('availableStaff').selectedOptions;
+            
+            if (!groupName) {
+                alert('Please select a group first');
+                return;
+            }
+            
+            Array.from(selectedOptions).forEach(option => {
+                const rc = option.value;
+                const index = groups[groupName].indexOf(rc);
+                if (index > -1) {
+                    groups[groupName].splice(index, 1);
+                    const staffMember = staff.find(s => s.rc === rc);
+                    staffMember.assignedToGroup = null;
+                }
+            });
+            
+            showGroupMembers();
+            updateDashboard();
+            updateAvailableStaffDropdown();
+            alert('Members removed from group');
+        }
+        
+        // Remove from group directly
+        function removeFromGroupDirect(rc) {
+            const groupName = document.getElementById('selectGroup').value;
             const index = groups[groupName].indexOf(rc);
             if (index > -1) {
                 groups[groupName].splice(index, 1);
                 const staffMember = staff.find(s => s.rc === rc);
                 staffMember.assignedToGroup = null;
+                showGroupMembers();
+                updateDashboard();
+                updateAvailableStaffDropdown();
             }
-        });
-        
-        showGroupMembers();
-        updateDashboard();
-        updateAvailableStaffDropdown();
-        updateWorkGroupDropdown();
-        alert('Members removed from group');
-    }
-    
-    // Remove from group directly
-    function removeFromGroupDirect(rc) {
-        const groupName = document.getElementById('selectGroup').value;
-        const index = groups[groupName].indexOf(rc);
-        if (index > -1) {
-            groups[groupName].splice(index, 1);
-            const staffMember = staff.find(s => s.rc === rc);
-            staffMember.assignedToGroup = null;
-            showGroupMembers();
-            updateDashboard();
-            updateAvailableStaffDropdown();
-            updateWorkGroupDropdown();
-        }
-    }
-    
-    // Select work status
-    function selectStatus(button, status) {
-        document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('selected'));
-        button.classList.add('selected');
-        selectedStatus = status;
-    }
-    
-    // Save work details
-    function saveWorkDetails() {
-        const messageDiv = document.getElementById('workMessage');
-        
-        if (!selectedStatus) {
-            showMessage(messageDiv, 'Please select a status', 'error');
-            return;
         }
         
-        const workEntry = {
-            logTime: document.getElementById('logTime').value,
-            department: document.getElementById('department').value,
-            task: document.getElementById('task').value,
-            workDetails: document.getElementById('workDetails').value,
-            assignedShift: document.getElementById('assignedShift').value,
-            workGroup: document.getElementById('workGroup').value,
-            assignedStaffs: Array.from(document.getElementById('assignedStaffs').selectedOptions).map(o => o.value),
-            attendTime: document.getElementById('attendTime').value,
-            status: selectedStatus,
-            endTime: document.getElementById('endTime').value,
-            reason: document.getElementById('reason').value,
-            submittedBy: currentUser.name,
-            timestamp: new Date().toLocaleString()
-        };
-        
-        workEntries.push(workEntry);
-        updateDashboard();
-        showMessage(messageDiv, 'Work details saved successfully!', 'success');
-        clearWorkForm();
-    }
-    
-    // Clear work form
-    function clearWorkForm() {
-        document.getElementById('logTime').value = new Date().toISOString().slice(0, 16);
-        document.getElementById('department').value = '';
-        document.getElementById('task').value = '';
-        document.getElementById('workDetails').value = '';
-        document.getElementById('assignedShift').value = '';
-        document.getElementById('workGroup').value = '';
-        document.getElementById('assignedStaffs').innerHTML = '';
-        document.getElementById('attendTime').value = '';
-        document.getElementById('endTime').value = '';
-        document.getElementById('reason').value = '';
-        document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('selected'));
-        selectedStatus = '';
-    }
-    
-    // Save all data
-    function saveAllData() {
-        const messageDiv = document.getElementById('reportMessage');
-        const allData = {
-            groups: groups,
-            workEntries: workEntries,
-            staff: staff,
-            timestamp: new Date().toLocaleString(),
-            savedBy: currentUser.name
-        };
-        
-        console.log('All data saved:', allData);
-        showMessage(messageDiv, 'All data saved successfully!', 'success');
-    }
-    
-    // Download report
-    function downloadReport() {
-        const messageDiv = document.getElementById('reportMessage');
-        
-        let report = `SHIFTSYNC MANAGEMENT REPORT\n`;
-        report += `Generated: ${new Date().toLocaleString()}\n`;
-        report += `Generated by: ${currentUser.name} (${currentUser.role})\n`;
-        report += `${'='.repeat(60)}\n\n`;
-        
-        // Staff summary
-        report += `STAFF SUMMARY:\n`;
-        report += `Total Staff: ${staff.length}\n`;
-        report += `Assigned to Groups: ${staff.filter(s => s.assignedToGroup).length}\n`;
-        report += `Unassigned: ${staff.filter(s => !s.assignedToGroup).length}\n\n`;
-        
-        // Groups
-        report += `GROUPS (${Object.keys(groups).length}):\n`;
-        Object.keys(groups).forEach(groupName => {
-            report += `  ${groupName}: ${groups[groupName].length} members\n`;
-        });
-        
-        // Work entries
-        report += `\nWORK ENTRIES (${workEntries.length}):\n`;
-        workEntries.forEach((entry, index) => {
-            report += `  ${index + 1}. ${entry.task} - ${entry.status}\n`;
-            report += `     Department: ${entry.department}\n`;
-            report += `     Submitted by: ${entry.submittedBy}\n`;
-            report += `     Time: ${entry.timestamp}\n\n`;
-        });
-        
-        const blob = new Blob([report], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `shiftsync_report_${new Date().toISOString().split('T')[0]}.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        showMessage(messageDiv, 'Report downloaded successfully!', 'success');
-    }
-    
-    // Clear all forms
-    function clearAllForms() {
-        if (currentUser.role !== 'admin') {
-            alert('Only administrators can clear all data');
-            return;
+        // Select work status
+        function selectStatus(button, status) {
+            document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+            selectedStatus = status;
         }
         
-        const messageDiv = document.getElementById('reportMessage');
-        
-        if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
-            groups = {};
-            workEntries = [];
-            selectedStatus = '';
+        // Save work details
+        function saveWorkDetails() {
+            const messageDiv = document.getElementById('workMessage');
             
-            // Reset staff assignments
-            staff.forEach(person => {
-                person.assignedToGroup = null;
+            if (!selectedStatus) {
+                showMessage(messageDiv, 'Please select a status', 'error');
+                return;
+            }
+            
+            const assignedGroup = document.getElementById('assignedGroup').value;
+            if (!assignedGroup) {
+                showMessage(messageDiv, 'Please select a group', 'error');
+                return;
+            }
+            
+            const assignedStaffs = Array.from(document.getElementById('assignedStaffs').selectedOptions).map(o => o.value);
+            if (assignedStaffs.length === 0) {
+                showMessage(messageDiv, 'Please select at least one staff member', 'error');
+                return;
+            }
+            
+            const workEntry = {
+                logTime: document.getElementById('logTime').value,
+                department: document.getElementById('department').value,
+                task: document.getElementById('task').value,
+                assignedGroup: assignedGroup,
+                workDetails: document.getElementById('workDetails').value,
+                assignedShift: document.getElementById('assignedShift').value,
+                assignedStaffs: assignedStaffs,
+                attendTime: document.getElementById('attendTime').value,
+                status: selectedStatus,
+                endTime: document.getElementById('endTime').value,
+                reason: document.getElementById('reason').value,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            workEntries.push(workEntry);
+            updateDashboard();
+            showMessage(messageDiv, 'Work details saved successfully!', 'success');
+            clearWorkForm();
+        }
+        
+        // Clear work form
+        function clearWorkForm() {
+            document.getElementById('logTime').value = new Date().toISOString().slice(0, 16);
+            document.getElementById('department').value = '';
+            document.getElementById('task').value = '';
+            document.getElementById('assignedGroup').value = '';
+            document.getElementById('workDetails').value = '';
+            document.getElementById('assignedShift').value = '';
+            document.getElementById('attendTime').value = '';
+            document.getElementById('endTime').value = '';
+            document.getElementById('reason').value = '';
+            document.getElementById('assignedStaffs').innerHTML = '';
+            document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('selected'));
+            selectedStatus = '';
+        }
+        
+        // Save all data
+        function saveAllData() {
+            const messageDiv = document.getElementById('reportMessage');
+            const allData = {
+                groups: groups,
+                staff: staff,
+                workEntries: workEntries,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            console.log('All data saved:', allData);
+            showMessage(messageDiv, 'All data saved successfully!', 'success');
+        }
+        
+        // Download report
+        function downloadReport() {
+            const messageDiv = document.getElementById('reportMessage');
+            
+            let report = `SHIFT MANAGEMENT REPORT\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n`;
+            report += `${'='.repeat(50)}\n\n`;
+            
+            // Groups
+            report += `GROUPS (${Object.keys(groups).length}):\n`;
+            Object.keys(groups).forEach(groupName => {
+                report += `  ${groupName}: ${groups[groupName].length} members\n`;
+                groups[groupName].forEach(rc => {
+                    const person = staff.find(s => s.rc === rc);
+                    report += `    - ${person.name} (${person.rc})\n`;
+                });
             });
             
-            // Clear all form inputs
-            clearWorkForm();
-            document.getElementById('groupName').value = '';
-            document.getElementById('selectGroup').value = '';
-            document.getElementById('groupMembers').innerHTML = 'Select a group to view members';
-            updateGroupSelect();
-            updateWorkGroupDropdown();
-            updateAvailableStaffDropdown();
-            updateDashboard();
+            // Work entries
+            report += `\nWORK ENTRIES (${workEntries.length}):\n`;
+            workEntries.forEach((entry, index) => {
+                report += `  ${index + 1}. ${entry.task} - ${entry.status}\n`;
+                report += `     Group: ${entry.assignedGroup}\n`;
+                report += `     Department: ${entry.department}\n`;
+                report += `     Staff: ${entry.assignedStaffs.map(rc => {
+                    const person = staff.find(s => s.rc === rc);
+                    return person ? `${person.name} (${person.rc})` : rc;
+                }).join(', ')}\n`;
+            });
             
-            showMessage(messageDiv, 'All data cleared successfully!', 'success');
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `shift_report_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showMessage(messageDiv, 'Report downloaded successfully!', 'success');
         }
-    }
-    
-    // Show success/error messages
-    function showMessage(container, message, type) {
-        container.innerHTML = `<div class="message ${type}"><i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}</div>`;
-        setTimeout(() => {
-            container.innerHTML = '';
-        }, 5000);
-    }
-</script>
-```
-
+        
+        // Clear all forms
+        function clearAllForms() {
+            const messageDiv = document.getElementById('reportMessage');
+            
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                groups = {};
+                workEntries = [];
+                selectedStatus = '';
+                
+                // Reset staff assignments
+                staff.forEach(member => {
+                    member.assignedToGroup = null;
+                });
+                
+                // Clear all form inputs
+                clearWorkForm();
+                document.getElementById('groupName').value = '';
+                document.getElementById('selectGroup').value = '';
+                document.getElementById('groupMembers').innerHTML = 'Select a group to view members';
+                populateGroupDropdowns();
+                updateDashboard();
+                updateAvailableStaffDropdown();
+                
+                showMessage(messageDiv, 'All data cleared successfully!', 'success');
+            }
+        }
+        
+        // Show success/error messages
+        function showMessage(container, message, type) {
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
