@@ -34,13 +34,23 @@
             line-height: 1.6;
         }
 
+        /* New class for body when login is active */
+        body.login-active {
+            overflow: hidden; /* Prevent scrolling of content behind login */
+        }
+
         /* Login Screen */
         .login-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            position: fixed; /* Cover the entire viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: #f5f7fb;
+            z-index: 1000; /* Ensure it's on top */
         }
         
         .login-card {
@@ -420,11 +430,53 @@
         }
 
         .employee-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            display: flex;
+            flex-wrap: wrap;
             gap: 0.75rem;
             margin-bottom: 0.75rem;
             align-items: center;
+            background: var(--light-gray);
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .employee-row .member-info {
+            font-weight: 600;
+            color: var(--dark);
+            flex-grow: 1; /* Allows it to take available space */
+            min-width: 150px; /* Ensure name doesn't get too small */
+        }
+        .employee-row .leave-info {
+            font-size: 0.8em;
+            color: var(--danger);
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        /* Adjust grid for attendance/performance inputs */
+        .employee-details {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column for small screens */
+            gap: 0.5rem;
+            flex-grow: 2; /* Allow details to take more space */
+        }
+
+        @media (min-width: 600px) {
+            .employee-details {
+                grid-template-columns: 1fr 1fr; /* Two columns for larger screens */
+            }
+        }
+        @media (min-width: 900px) {
+            .employee-details {
+                grid-template-columns: 1fr 1fr 1.5fr; /* Three columns for larger screens */
+            }
+        }
+
+        .employee-details select,
+        .employee-details input[type="text"] {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
         }
 
         .add-btn {
@@ -489,6 +541,9 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1; /* Spans all columns */
         }
 
         .status-buttons {
@@ -653,9 +708,61 @@
             }
             
             .employee-row {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
+                flex-direction: column;
+                align-items: flex-start;
             }
+
+            .employee-details {
+                width: 100%; /* Ensure inputs take full width */
+            }
+        }
+
+        /* Modal for password entry */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1001; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+            animation-name: animatetop;
+            animation-duration: 0.4s
+        }
+
+        /* Add Animation */
+        @keyframes animatetop {
+            from {top: -300px; opacity: 0}
+            to {top: 0; opacity: 1}
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -707,6 +814,11 @@
                     <i class="fas fa-layer-group"></i>
                     <span>Groups</span>
                 </a>
+                <a href="#" class="nav-item admin-only" onclick="showSection('staff-management')">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Staff Management</span>
+                </a>
+                <!-- Removed Leaves section from sidebar as it's integrated into Shifts -->
                 <a href="#" class="nav-item" onclick="showSection('reports')">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
@@ -826,100 +938,31 @@
                     </div>
                 </div>
                 
-                <div class="shifts-container">
+                <!-- Daily Work Summary Section -->
+                <div class="form-container">
                     <div class="section-header">
-                        <h2 class="section-title">Today's Shifts</h2>
+                        <h2 class="section-title">Daily Work Summary</h2>
                         <div class="button-group">
-                            <button class="btn btn-primary">
-                                <i class="fas fa-plus"></i> New Shift
-                            </button>
+                            <label for="workSummaryDate" class="form-label" style="margin-right: 10px;">Select Date:</label>
+                            <input type="date" id="workSummaryDate" onchange="displayDailyWorkSummary()">
                         </div>
                     </div>
-                    
-                    <div class="shifts-grid">
-                        <!-- Shift A -->
-                        <div class="shift-card">
-                            <div class="shift-header shift-a">
-                                Shift A: 00:30 - 08:30
-                            </div>
-                            <div class="shift-body">
-                                <div class="team-section">
-                                    <h3 class="team-title">
-                                        <i class="fas fa-user-tie"></i> Duty In-charge
-                                    </h3>
-                                    <div id="inchargeA"></div>
-                                    <button class="add-btn" onclick="addEmployee('inchargeA')">
-                                        <i class="fas fa-plus"></i> Add In-charge
-                                    </button>
-                                </div>
-                                
-                                <div class="team-section">
-                                    <h3 class="team-title">
-                                        <i class="fas fa-users"></i> Duty Members
-                                    </h3>
-                                    <div id="membersA"></div>
-                                    <button class="add-btn" onclick="addEmployee('membersA')">
-                                        <i class="fas fa-plus"></i> Add Member
-                                    </button>
-                                </div>
-                            </div>
+                    <div id="dailyWorkSummaryContent">
+                        Select a date to view work details.
+                    </div>
+                </div>
+
+                <!-- Daily Shift Summary Section -->
+                <div class="form-container" style="margin-top: 2rem;">
+                    <div class="section-header">
+                        <h2 class="section-title">Daily Shift Summary</h2>
+                        <div class="button-group">
+                            <label for="shiftSummaryDate" class="form-label" style="margin-right: 10px;">Select Date:</label>
+                            <input type="date" id="shiftSummaryDate" onchange="displayDailyShiftSummary()">
                         </div>
-                        
-                        <!-- Shift B -->
-                        <div class="shift-card">
-                            <div class="shift-header shift-b">
-                                Shift B: 08:00 - 16:00
-                            </div>
-                            <div class="shift-body">
-                                <div class="team-section">
-                                    <h3 class="team-title">
-                                        <i class="fas fa-user-tie"></i> Duty In-charge
-                                    </h3>
-                                    <div id="inchargeB"></div>
-                                    <button class="add-btn" onclick="addEmployee('inchargeB')">
-                                        <i class="fas fa-plus"></i> Add In-charge
-                                    </button>
-                                </div>
-                                
-                                <div class="team-section">
-                                    <h3 class="team-title">
-                                        <i class="fas fa-users"></i> Duty Members
-                                    </h3>
-                                    <div id="membersB"></div>
-                                    <button class="add-btn" onclick="addEmployee('membersB')">
-                                        <i class="fas fa-plus"></i> Add Member
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Shift C -->
-                        <div class="shift-card">
-                            <div class="shift-header shift-c">
-                                Shift C: 15:30 - 00:30
-                            </div>
-                            <div class="shift-body">
-                                <div class="team-section">
-                                    <h3 class="team-title">
-                                        <i class="fas fa-user-tie"></i> Duty In-charge
-                                    </h3>
-                                    <div id="inchargeC"></div>
-                                    <button class="add-btn" onclick="addEmployee('inchargeC')">
-                                        <i class="fas fa-plus"></i> Add In-charge
-                                    </button>
-                                </div>
-                                
-                                <div class="team-section">
-                                    <h3 class="team-title">
-                                        <i class="fas fa-users"></i> Duty Members
-                                    </h3>
-                                    <div id="membersC"></div>
-                                    <button class="add-btn" onclick="addEmployee('membersC')">
-                                        <i class="fas fa-plus"></i> Add Member
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
+                    <div id="dailyShiftSummaryContent">
+                        Select a date to view shift details.
                     </div>
                 </div>
             </div>
@@ -929,8 +972,13 @@
                 <div class="section-header">
                     <h2 class="section-title">Shift Management</h2>
                     <div class="button-group">
-                        <button class="btn btn-primary">
-                            <i class="fas fa-plus"></i> New Shift
+                        <label for="shiftDate" class="form-label" style="margin-right: 10px;">Select Date:</label>
+                        <input type="date" id="shiftDate" onchange="loadShiftDataForDate()">
+                        <button class="btn btn-primary" id="saveShiftDataBtn" onclick="saveShiftData()">
+                            <i class="fas fa-save"></i> Save Shift Data
+                        </button>
+                        <button class="btn btn-secondary" id="unlockShiftBtn" onclick="openUnlockModal()" style="display: none;">
+                            <i class="fas fa-lock-open"></i> Unlock to Edit
                         </button>
                     </div>
                 </div>
@@ -946,20 +994,20 @@
                                 <h3 class="team-title">
                                     <i class="fas fa-user-tie"></i> Duty In-charge
                                 </h3>
-                                <div id="inchargeA2"></div>
-                                <button class="add-btn" onclick="addEmployee('inchargeA2')">
-                                    <i class="fas fa-plus"></i> Add In-charge
-                                </button>
+                                <select id="inchargeA2" onchange="displayGroupMembers('inchargeA2', this.value, 'incharge')">
+                                    <option value="">Select In-charge Group</option>
+                                </select>
+                                <div id="inchargeA2Members"></div>
                             </div>
                             
                             <div class="team-section">
                                 <h3 class="team-title">
                                     <i class="fas fa-users"></i> Duty Members
                                 </h3>
-                                <div id="membersA2"></div>
-                                <button class="add-btn" onclick="addEmployee('membersA2')">
-                                    <i class="fas fa-plus"></i> Add Member
-                                </button>
+                                <select id="membersA2" onchange="displayGroupMembers('membersA2', this.value, 'normal')">
+                                    <option value="">Select Members Group</option>
+                                </select>
+                                <div id="membersA2Members"></div>
                             </div>
                         </div>
                     </div>
@@ -974,20 +1022,20 @@
                                 <h3 class="team-title">
                                     <i class="fas fa-user-tie"></i> Duty In-charge
                                 </h3>
-                                <div id="inchargeB2"></div>
-                                <button class="add-btn" onclick="addEmployee('inchargeB2')">
-                                    <i class="fas fa-plus"></i> Add In-charge
-                                </button>
+                                <select id="inchargeB2" onchange="displayGroupMembers('inchargeB2', this.value, 'incharge')">
+                                    <option value="">Select In-charge Group</option>
+                                </select>
+                                <div id="inchargeB2Members"></div>
                             </div>
                             
                             <div class="team-section">
                                 <h3 class="team-title">
                                     <i class="fas fa-users"></i> Duty Members
                                 </h3>
-                                <div id="membersB2"></div>
-                                <button class="add-btn" onclick="addEmployee('membersB2')">
-                                    <i class="fas fa-plus"></i> Add Member
-                                </button>
+                                <select id="membersB2" onchange="displayGroupMembers('membersB2', this.value, 'normal')">
+                                    <option value="">Select Members Group</option>
+                                </select>
+                                <div id="membersB2Members"></div>
                             </div>
                         </div>
                     </div>
@@ -1002,26 +1050,92 @@
                                 <h3 class="team-title">
                                     <i class="fas fa-user-tie"></i> Duty In-charge
                                 </h3>
-                                <div id="inchargeC2"></div>
-                                <button class="add-btn" onclick="addEmployee('inchargeC2')">
-                                    <i class="fas fa-plus"></i> Add In-charge
-                                </button>
+                                <select id="inchargeC2" onchange="displayGroupMembers('inchargeC2', this.value, 'incharge')">
+                                    <option value="">Select In-charge Group</option>
+                                </select>
+                                <div id="inchargeC2Members"></div>
                             </div>
                             
                             <div class="team-section">
                                 <h3 class="team-title">
                                     <i class="fas fa-users"></i> Duty Members
                                 </h3>
-                                <div id="membersC2"></div>
-                                <button class="add-btn" onclick="addEmployee('membersC2')">
-                                    <i class="fas fa-plus"></i> Add Member
-                                </button>
+                                <select id="membersC2" onchange="displayGroupMembers('membersC2', this.value, 'normal')">
+                                    <option value="">Select Members Group</option>
+                                </select>
+                                <div id="membersC2Members"></div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Leaves Section Integrated into Shift Management -->
+                <div class="form-container" style="margin-top: 2rem;">
+                    <h3 class="form-title">Record Emergency Leave</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="emergencyLeaveStaff" class="form-label">Staff Member</label>
+                            <select id="emergencyLeaveStaff">
+                                <option value="">Select Staff</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="leaveReason" class="form-label">Reason for Leave</label>
+                            <input type="text" id="leaveReason" placeholder="e.g., Family emergency, medical appointment">
+                        </div>
+                        <div class="form-group">
+                            <label for="permissionGiver" class="form-label">Permission Given By</label>
+                            <input type="text" id="permissionGiver" placeholder="Name or Role">
+                        </div>
+                        <div class="form-group">
+                            <label for="leaveTime" class="form-label">Time of Leave</label>
+                            <input type="datetime-local" id="leaveTime">
+                        </div>
+                        <div class="form-group">
+                            <label for="returnTime" class="form-label">Time of Return</label>
+                            <input type="datetime-local" id="returnTime">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="saveEmergencyLeave()">
+                            <i class="fas fa-save"></i> Record Leave
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearEmergencyLeaveForm()">
+                            <i class="fas fa-undo"></i> Clear Form
+                        </button>
+                    </div>
+                    <div id="emergencyLeaveMessage"></div>
+                </div>
+
+                <div class="form-container" id="sickLeaveReplacementSection" style="margin-top: 2rem; display: none;">
+                    <h3 class="form-title">Staff on Sick Leave & Replacement</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="sickLeaveStaff" class="form-label">Staff on Sick Leave</label>
+                            <select id="sickLeaveStaff" onchange="showReplacementOption()">
+                                <option value="">Select Staff</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="replacementStaffGroup" style="display: none;">
+                            <label for="replacementStaff" class="form-label">Assign Replacement</label>
+                            <select id="replacementStaff">
+                                <option value="">Select Replacement Staff</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="assignReplacement()">
+                            <i class="fas fa-check"></i> Assign Replacement
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearSickLeaveForm()">
+                            <i class="fas fa-times"></i> Clear Assignment
+                        </button>
+                    </div>
+                    <div id="sickLeaveMessage"></div>
+                </div>
+
             </div>
-            
+
             <!-- Work Details Section -->
             <div id="work-details" class="section" style="display: none;">
                 <div class="section-header">
@@ -1032,7 +1146,6 @@
                         </button>
                     </div>
                 </div>
-                
                 <div class="form-container">
                     <h3 class="form-title">New Work Entry</h3>
                     <div class="form-grid">
@@ -1108,7 +1221,6 @@
                             <textarea id="reason" rows="2" placeholder="Enter reason if needed..."></textarea>
                         </div>
                     </div>
-                    
                     <div class="button-group">
                         <button class="btn btn-primary" onclick="saveWorkDetails()">
                             <i class="fas fa-save"></i> Save Work Details
@@ -1117,11 +1229,10 @@
                             <i class="fas fa-undo"></i> Clear Form
                         </button>
                     </div>
-                    
                     <div id="workMessage"></div>
                 </div>
             </div>
-            
+
             <!-- Groups Section -->
             <div id="groups" class="section" style="display: none;">
                 <div class="section-header">
@@ -1132,13 +1243,19 @@
                         </button>
                     </div>
                 </div>
-                
                 <div class="form-container" id="createGroupForm">
                     <h3 class="form-title">Create New Group</h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="groupName" class="form-label">Group Name</label>
                             <input type="text" id="groupName" placeholder="Enter group name">
+                        </div>
+                        <div class="form-group">
+                            <label for="groupType" class="form-label">Group Type</label>
+                            <select id="groupType">
+                                <option value="normal">Normal Staff</option>
+                                <option value="incharge">In-charge</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">&nbsp;</label>
@@ -1149,7 +1266,6 @@
                     </div>
                     <div id="groupMessage"></div>
                 </div>
-                
                 <div class="form-container">
                     <h3 class="form-title">Manage Groups</h3>
                     <div class="form-grid">
@@ -1164,14 +1280,12 @@
                             <select id="availableStaff" multiple style="height: 200px;"></select>
                         </div>
                     </div>
-                    
                     <div class="form-group">
                         <label class="form-label">Group Members</label>
                         <div id="groupMembers" class="group-members">
                             Select a group to view members
                         </div>
                     </div>
-                    
                     <div class="button-group">
                         <button class="btn btn-primary" onclick="addToGroup()">
                             <i class="fas fa-plus"></i> Add to Group
@@ -1182,7 +1296,68 @@
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Staff Management Section -->
+            <div id="staff-management" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Staff Management</h2>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="showAddStaffForm()">
+                            <i class="fas fa-user-plus"></i> Add New Staff
+                        </button>
+                    </div>
+                </div>
+                <div class="form-container" id="addStaffForm" style="display: none;">
+                    <h3 class="form-title">Add New Staff</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="newStaffName" class="form-label">Staff Name</label>
+                            <input type="text" id="newStaffName" placeholder="Enter staff name">
+                        </div>
+                        <div class="form-group">
+                            <label for="newStaffRC" class="form-label">Staff RC</label>
+                            <input type="text" id="newStaffRC" placeholder="Enter staff RC">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-success" onclick="addNewStaff()">
+                                <i class="fas fa-plus"></i> Add Staff
+                            </button>
+                        </div>
+                    </div>
+                    <div id="addStaffMessage"></div>
+                </div>
+
+                <div class="form-container">
+                    <h3 class="form-title">Edit Existing Staff</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="editStaffSelect" class="form-label">Select Staff to Edit</label>
+                            <select id="editStaffSelect" onchange="loadStaffForEdit()">
+                                <option value="">Select a staff member</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editStaffName" class="form-label">Staff Name</label>
+                            <input type="text" id="editStaffName" placeholder="Staff Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="editStaffRC" class="form-label">Staff RC</label>
+                            <input type="text" id="editStaffRC" placeholder="Staff RC">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="updateStaff()">
+                            <i class="fas fa-save"></i> Update Staff
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteStaff()">
+                            <i class="fas fa-trash"></i> Delete Staff
+                        </button>
+                    </div>
+                    <div id="editStaffMessage"></div>
+                </div>
+            </div>
+
             <!-- Reports Section -->
             <div id="reports" class="section" style="display: none;">
                 <div class="section-header">
@@ -1193,7 +1368,6 @@
                         </button>
                     </div>
                 </div>
-                
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-header">
@@ -1209,7 +1383,6 @@
                             <i class="fas fa-arrow-up"></i> 12% from last month
                         </div>
                     </div>
-                    
                     <div class="stat-card">
                         <div class="stat-header">
                             <div>
@@ -1224,7 +1397,6 @@
                             <i class="fas fa-arrow-up"></i> 8% from last month
                         </div>
                     </div>
-                    
                     <div class="stat-card">
                         <div class="stat-header">
                             <div>
@@ -1239,7 +1411,6 @@
                             <i class="fas fa-arrow-down"></i> 2% from last month
                         </div>
                     </div>
-                    
                     <div class="stat-card">
                         <div class="stat-header">
                             <div>
@@ -1255,7 +1426,6 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="form-container">
                     <div class="button-group">
                         <button class="btn btn-success" onclick="saveAllData()">
@@ -1268,10 +1438,27 @@
                             <i class="fas fa-trash"></i> Clear All Data
                         </button>
                     </div>
-                    
                     <div id="reportMessage"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Unlock Password Modal -->
+    <div id="unlockModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeUnlockModal()">&times;</span>
+            <h3 class="form-title">Unlock Shift for Editing</h3>
+            <div class="form-group">
+                <label for="unlockUsername" class="form-label">Username</label>
+                <input type="text" id="unlockUsername" class="form-input">
+            </div>
+            <div class="form-group">
+                <label for="unlockPassword" class="form-label">Password</label>
+                <input type="password" id="unlockPassword" class="form-input">
+            </div>
+            <button class="btn btn-primary" onclick="authenticateAndUnlock()">Unlock</button>
+            <div id="unlockMessage" style="margin-top: 1rem;"></div>
         </div>
     </div>
 
@@ -1280,592 +1467,1417 @@
         const users = [
             { username: 'admin', password: 'admin123', name: 'Admin User', role: 'admin' },
             { username: 'manager', password: 'manager123', name: 'Manager User', role: 'manager' },
+            { username: 'incharge', password: 'incharge123', name: 'Duty Incharge', role: 'incharge' },
             { username: 'staff1', password: 'staff123', name: 'Staff Member', role: 'staff' }
         ];
 
         // Staff data with assignedToGroup field
-        const staff = [
-            { name: 'Shukh Hussain', rc: 'T941', assignedToGroup: null },
-            { name: 'Hassan Khaleel', rc: 'A-1733', assignedToGroup: null },
-            { name: 'Ahmed Neesham', rc: '26552', assignedToGroup: null },
-            { name: 'Ali Samaah', rc: 'A-2352', assignedToGroup: null },
-            { name: 'Umar Yoosuf', rc: '12283', assignedToGroup: null },
-            { name: 'Abdul Rauf Hamid', rc: 'A-1584', assignedToGroup: null },
-            { name: 'Abdulla Hamdhan', rc: 'A-2453', assignedToGroup: null },
-            { name: 'Abdul Naeem', rc: 'A-2658', assignedToGroup: null },
-            { name: 'Ahmed Mohamed', rc: 'A-2718', assignedToGroup: null },
-            { name: 'Mohamed Adam', rc: 'A-3030', assignedToGroup: null },
-            { name: 'Moosa Solah', rc: 'A-3055', assignedToGroup: null },
-            { name: 'Ahmed Naseem', rc: 'A-3648', assignedToGroup: null },
-            { name: 'Hussain Suneel', rc: 'A-6453', assignedToGroup: null },
-            { name: 'Saaidh Abdul Raheem', rc: 'A-6623', assignedToGroup: null },
-            { name: 'Hussain Abdul Rahman', rc: 'A-6634', assignedToGroup: null },
-            { name: 'Safuraaz Mohamed', rc: 'A-7617', assignedToGroup: null },
-            { name: 'Mohamed Irfan Ibrahim', rc: 'A-7619', assignedToGroup: null },
-            { name: 'Ahuzam Mohamed', rc: 'A-7620', assignedToGroup: null },
-            { name: 'Ibthihaal Hassan', rc: 'A-7646', assignedToGroup: null },
-            { name: 'Ahmed Zareer', rc: 'A-7658', assignedToGroup: null },
-            { name: 'Mohamed Hannadh', rc: 'A-7301', assignedToGroup: null },
-            { name: 'Ahmed Zareer', rc: 'A-7735', assignedToGroup: null },
-            { name: 'Abdul Muhuthee Abdul Azeez', rc: 'A-7737', assignedToGroup: null },
-            { name: 'Ahmed Haneef', rc: 'A-7738', assignedToGroup: null },
-            { name: 'Ali Akram', rc: 'A-7887', assignedToGroup: null },
-            { name: 'Abdul Ali', rc: 'A-1384', assignedToGroup: null },
-            { name: 'Fauzaan Ahmed fayaaz', rc: 'A-6331', assignedToGroup: null },
-            { name: 'Mohamed Ashraf', rc: 'A-8332', assignedToGroup: null },
-            { name: 'Abdulla Shuraim Bin Nooh', rc: 'A-6605', assignedToGroup: null },
-            { name: 'Ali Mohamed', rc: 'A-8632', assignedToGroup: null },
-            { name: 'Ahmed Siaf Mohamed Hussani', rc: 'A-8611', assignedToGroup: null },
-            { name: 'Gamaaldeen Fathuhee', rc: 'A-3051', assignedToGroup: null },
-            { name: 'Maazin Waheed', rc: 'A-3108', assignedToGroup: null },
-            { name: 'Abdul Rahman Easa', rc: 'A-3173', assignedToGroup: null },
-            { name: 'Meesum Abdul Majeed', rc: 'A-9451', assignedToGroup: null },
-            { name: 'Ahmed Afnan', rc: 'A-8385', assignedToGroup: null },
-            { name: 'Afwan Abdulla Naseer', rc: 'A-10356', assignedToGroup: null },
-            { name: 'Bashar Ahmed', rc: 'A-10222', assignedToGroup: null },
-            { name: 'Umar Zaahir', rc: 'A-2688', assignedToGroup: null },
-            { name: 'Rasham Shifaun Abdulla', rc: 'A-10218', assignedToGroup: null },
-            { name: 'Yusuf Alain Bin Azim', rc: 'A-10383', assignedToGroup: null },
-            { name: 'Abdul Ali', rc: 'A-8713', assignedToGroup: null },
-            { name: 'Mohamed Sharan', rc: 'A-8813', assignedToGroup: null },
-            { name: 'Ahmed Tholal', rc: 'A-11383', assignedToGroup: null },
-            { name: 'Moosa Naeem', rc: 'A-1389', assignedToGroup: null }
+        let staff = [
+            { name: 'Shukh Hussain', rc: 'T941', assignedToGroup: null, onLeave: false },
+            { name: 'Hassan Khaleel', rc: 'A-1733', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Neesham', rc: '26552', assignedToGroup: null, onLeave: false },
+            { name: 'Ali Samaah', rc: 'A-2352', assignedToGroup: null, onLeave: false },
+            { name: 'Umar Yoosuf', rc: '12283', assignedToGroup: null, onLeave: false },
+            { name: 'Abdul Rauf Hamid', rc: 'A-1584', assignedToGroup: null, onLeave: false },
+            { name: 'Abdulla Hamdhan', rc: 'A-2453', assignedToGroup: null, onLeave: false },
+            { name: 'Abd-ul Naeem', rc: 'A-2658', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Mohamed', rc: 'A-2718', assignedToGroup: null, onLeave: false },
+            { name: 'Mohamed Adam', rc: 'A-3030', assignedToGroup: null, onLeave: false },
+            { name: 'Moosa Solah', rc: 'A-3055', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Naseem', rc: 'A-3648', assignedToGroup: null, onLeave: false },
+            { name: 'Hussain Suneel', rc: 'A-6453', assignedToGroup: null, onLeave: false },
+            { name: 'Saaidh Abdul Raheem', rc: 'A-6623', assignedToGroup: null, onLeave: false },
+            { name: 'Hussain Abdul Rahman', rc: 'A-6634', assignedToGroup: null, onLeave: false },
+            { name: 'Safuraaz Mohamed', rc: 'A-7617', assignedToGroup: null, onLeave: false },
+            { name: 'Mohamed Irfan Ibrahim', rc: 'A-7619', assignedToGroup: null, onLeave: false },
+            { name: 'Ahuzam Mohamed', rc: 'A-7620', assignedToGroup: null, onLeave: false },
+            { name: 'Ibthihaal Hassan', rc: 'A-7646', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Zareer', rc: 'A-7658', assignedToGroup: null, onLeave: false },
+            { name: 'Mohamed Hannadh', rc: 'A-7301', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Zareer', rc: 'A-7735', assignedToGroup: null, onLeave: false },
+            { name: 'Abdul Muhuthee Abdul Azeez', rc: 'A-7737', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Haneef', rc: 'A-7738', assignedToGroup: null, onLeave: false },
+            { name: 'Ali Akram', rc: 'A-7887', assignedToGroup: null, onLeave: false },
+            { name: 'Abdul Ali', rc: 'A-1384', assignedToGroup: null, onLeave: false },
+            { name: 'Fauzaan Ahmed fayaaz', rc: 'A-6331', assignedToGroup: null, onLeave: false },
+            { name: 'Mohamed Ashraf', rc: 'A-8332', assignedToGroup: null, onLeave: false },
+            { name: 'Abdulla Shuraim Bin Nooh', rc: 'A-6605', assignedToGroup: null, onLeave: false },
+            { name: 'Ali Mohamed', rc: 'A-8669', assignedToGroup: null, onLeave: false },
+            { name: 'Hussain Solah', rc: 'A-6680', assignedToGroup: null, onLeave: false },
+            { name: 'Hassan Solah', rc: 'A-6681', assignedToGroup: null, onLeave: false },
+            { name: 'Ismail Nihad', rc: 'A-6844', assignedToGroup: null, onLeave: false },
+            { name: 'Abdulla Nazim', rc: 'A-6847', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Asif', rc: 'A-6848', assignedToGroup: null, onLeave: false },
+            { name: 'Abdullah Nasih', rc: 'A-6850', assignedToGroup: null, onLeave: false },
+            { name: 'Ibrahim Adam', rc: 'A-6920', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Nabeel', rc: 'A-6921', assignedToGroup: null, onLeave: false },
+            { name: 'Hussain Zareer', rc: 'A-7009', assignedToGroup: null, onLeave: false },
+            { name: 'Abdulla Nazim', rc: 'A-7010', assignedToGroup: null, onLeave: false },
+            { name: 'Abdul Rasheed', rc: 'A-7011', assignedToGroup: null, onLeave: false },
+            { name: 'Ahmed Shareef', rc: 'A-7012', assignedToGroup: null, onLeave: false },
+            { name: 'Mohamed Shareef', rc: 'A-7013', assignedToGroup: null, onLeave: false },
+            { name: 'Ibrahim Shareef', rc: 'A-7014', assignedToGroup: null, onLeave: false }
         ];
-        
-        // Global variables
+
+        // Groups data structure: { groupName: { type: 'incharge'|'normal', members: ['rc1', 'rc2'] } }
         let groups = {};
+
+        // Work entries data structure
         let workEntries = [];
+
+        // New: Shift data by date
+        // key format: 'YYYY-MM-DD' -> { locked: boolean, 'shiftId_groupName': { staffRC: { attendance: '', performance: '', remarks: '' } } }
+        let shiftDataByDate = {}; 
+
+        // New: Emergency Leave data structure
+        let emergencyLeaves = [];
+
+        // New: Sick Leave Assignments { sickStaffRC: replacementStaffRC }
+        let sickLeaveAssignments = {};
+
+        let currentUser = null;
         let selectedStatus = '';
-        
-        // Initialize login form
+        let currentShiftDate = ''; // To store the currently selected date for shifts
+
+        // Utility function to get today's date inYYYY-MM-DD format
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const savedStaff = localStorage.getItem('staff');
+            if (savedStaff) {
+                staff = JSON.parse(savedStaff);
+            }
+            const savedGroups = localStorage.getItem('groups');
+            if (savedGroups) {
+                groups = JSON.parse(savedGroups);
+            }
+            const savedWorkEntries = localStorage.getItem('workEntries');
+            if (savedWorkEntries) {
+                workEntries = JSON.parse(savedWorkEntries);
+            }
+            const savedShiftDataByDate = localStorage.getItem('shiftDataByDate');
+            if (savedShiftDataByDate) {
+                shiftDataByDate = JSON.parse(savedShiftDataByDate);
+            }
+            const savedEmergencyLeaves = localStorage.getItem('emergencyLeaves');
+            if (savedEmergencyLeaves) {
+                emergencyLeaves = JSON.parse(savedEmergencyLeaves);
+            }
+            const savedSickLeaveAssignments = localStorage.getItem('sickLeaveAssignments');
+            if (savedSickLeaveAssignments) {
+                sickLeaveAssignments = JSON.parse(savedSickLeaveAssignments);
+            }
+            
+            // Ensure login screen is active on initial load
+            document.body.classList.add('login-active');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('staff', JSON.stringify(staff));
+            localStorage.setItem('groups', JSON.stringify(groups));
+            localStorage.setItem('workEntries', JSON.stringify(workEntries));
+            localStorage.setItem('shiftDataByDate', JSON.stringify(shiftDataByDate));
+            localStorage.setItem('emergencyLeaves', JSON.stringify(emergencyLeaves));
+            localStorage.setItem('sickLeaveAssignments', JSON.stringify(sickLeaveAssignments));
+        }
+
+        // Login function
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
-            const messageDiv = document.getElementById('loginMessage');
-            
-            // Find matching user
+            const loginMessageDiv = document.getElementById('loginMessage');
+
             const user = users.find(u => u.username === username && u.password === password);
-            
+
             if (user) {
-                // Successful login
-                messageDiv.textContent = 'Login successful! Redirecting...';
-                messageDiv.style.color = 'green';
-                
-                // Store user in session
-                sessionStorage.setItem('currentUser', JSON.stringify(user));
-                
-                // Hide login and show app (after brief delay)
-                setTimeout(() => {
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('appContainer').style.display = 'grid';
-                    initializeApp();
-                }, 1000);
+                currentUser = user;
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUser)); // Save current user to session storage
+                showApp();
+                showMessage(loginMessageDiv, 'Login successful!', 'success');
             } else {
-                // Failed login
-                messageDiv.textContent = 'Invalid username or password';
-                messageDiv.style.color = 'red';
+                showMessage(loginMessageDiv, 'Invalid username or password.', 'error');
             }
         });
 
         // Logout function
         function logout() {
-            sessionStorage.removeItem('currentUser');
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
-            document.getElementById('loginMessage').textContent = '';
+            currentUser = null;
+            sessionStorage.removeItem('currentUser'); // Clear current user from session storage
+            document.getElementById('appContainer').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.body.classList.add('login-active'); // Re-apply overflow hidden
+            document.getElementById('loginForm').reset(); // Clear login form
         }
 
-        // Initialize the application
-        function initializeApp() {
-            // Get logged in user
-            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+        // Show application and hide login
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            document.body.classList.remove('login-active'); // Remove overflow hidden
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase();
             
-            if (!currentUser) {
-                window.location.reload();
-                return;
+            // Hide admin-only sections if not admin
+            if (currentUser.role !== 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+            } else {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
             }
-            
-            // Update UI based on role
-            if (currentUser.role === 'staff') {
-                // Hide admin-only sections
-                document.querySelectorAll('.admin-only').forEach(el => {
-                    el.style.display = 'none';
-                });
-            }
-            
-            // Update user display
-            const avatar = document.getElementById('userAvatar');
-            const userNameDisplay = document.getElementById('userName');
-            
-            if (avatar && userNameDisplay) {
-                const initials = currentUser.name.split(' ').map(n => n[0]).join('');
-                avatar.textContent = initials;
-                userNameDisplay.textContent = currentUser.name;
-            }
-            
-            // Initialize the rest of your app
-            document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
-            document.getElementById('logTime').value = new Date().toISOString().slice(0, 16);
-            populateStaffDropdowns();
+
+            // Initialize all dynamic content
             updateDashboard();
             populateGroupDropdowns();
+            populateStaffDropdowns(); // Populate staff dropdowns for staff management
+            populateShiftGroupDropdowns(); // Populate group dropdowns for shifts
+            populateLeaveStaffDropdowns(); // Populate staff dropdowns for leaves forms in shifts section
+            
+            // Set default date for shift management to today
+            currentShiftDate = getTodayDate();
+            document.getElementById('shiftDate').value = currentShiftDate;
+            document.getElementById('workSummaryDate').value = currentShiftDate; // Set for dashboard too
+            document.getElementById('shiftSummaryDate').value = currentShiftDate; // Set for dashboard shift summary
+            loadShiftDataForDate(); // Load initial shift data for today's date
+            displayDailyWorkSummary(); // Display work summary for today
+            displayDailyShiftSummary(); // Display shift summary for today
+
+            showSection('dashboard'); // Default to dashboard
         }
 
-        // Populate staff dropdowns
-        function populateStaffDropdowns() {
-            updateAvailableStaffDropdown();
-            
-            // Initialize assigned staff dropdown (empty until group is selected)
-            const assignedStaffs = document.getElementById('assignedStaffs');
-            assignedStaffs.innerHTML = '';
-        }
-
-        // Update available staff dropdown to show only unassigned staff
-        function updateAvailableStaffDropdown() {
-            const availableStaff = document.getElementById('availableStaff');
-            availableStaff.innerHTML = '';
-            
-            staff.forEach(person => {
-                if (!person.assignedToGroup) {
-                    const option = document.createElement('option');
-                    option.value = person.rc;
-                    option.textContent = `${person.name} (${person.rc})`;
-                    availableStaff.appendChild(option);
-                }
-            });
-        }
-
-        // Populate group dropdowns
-        function populateGroupDropdowns() {
-            const assignedGroupSelect = document.getElementById('assignedGroup');
-            const selectGroup = document.getElementById('selectGroup');
-            
-            // Clear existing options
-            assignedGroupSelect.innerHTML = '<option value="">Select Group</option>';
-            selectGroup.innerHTML = '<option value="">Select a group</option>';
-            
-            // Add group options
-            Object.keys(groups).forEach(groupName => {
-                const option1 = document.createElement('option');
-                option1.value = groupName;
-                option1.textContent = groupName;
-                assignedGroupSelect.appendChild(option1);
-                
-                const option2 = document.createElement('option');
-                option2.value = groupName;
-                option2.textContent = groupName;
-                selectGroup.appendChild(option2);
-            });
-        }
-
-        // Update assigned staff dropdown based on selected group
-        function updateAssignedStaffDropdown(groupName) {
-            const assignedStaffs = document.getElementById('assignedStaffs');
-            assignedStaffs.innerHTML = '';
-            
-            if (!groupName) return;
-            
-            if (groups[groupName]) {
-                groups[groupName].forEach(rc => {
-                    const person = staff.find(s => s.rc === rc);
-                    if (person) {
-                        const option = document.createElement('option');
-                        option.value = person.rc;
-                        option.textContent = `${person.name} (${person.rc})`;
-                        assignedStaffs.appendChild(option);
-                    }
-                });
-            }
-        }
-
-        // Navigation function
+        // Section management
         function showSection(sectionId) {
-            // Hide all sections
-            const sections = document.querySelectorAll('.section');
-            sections.forEach(section => section.style.display = 'none');
-            
-            // Remove active class from all nav items
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => item.classList.remove('active'));
-            
-            // Show selected section
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.style.display = 'block';
-            }
-            
-            // Add active class to the clicked nav item
-            const clickedItem = Array.from(navItems).find(item => 
-                item.getAttribute('onclick').includes(sectionId)
-            );
-            if (clickedItem) {
-                clickedItem.classList.add('active');
-            }
-            
-            // Update page title
-            const pageTitle = document.getElementById('pageTitle');
-            switch(sectionId) {
-                case 'dashboard':
-                    pageTitle.textContent = 'Dashboard';
-                    break;
-                case 'shifts':
-                    pageTitle.textContent = 'Shift Management';
-                    break;
-                case 'work-details':
-                    pageTitle.textContent = 'Work Details';
-                    break;
-                case 'groups':
-                    pageTitle.textContent = 'Group Management';
-                    break;
-                case 'reports':
-                    pageTitle.textContent = 'Reports & Analytics';
-                    break;
-            }
-            
-            // Update dashboard when showing it
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+                section.classList.remove('show');
+            });
+            document.getElementById(sectionId).style.display = 'block';
+            document.getElementById(sectionId).classList.add('show');
+            document.getElementById('pageTitle').textContent = document.querySelector(`.nav-item[onclick="showSection('${sectionId}')"] span`).textContent;
+
+            // Specific updates for sections
             if (sectionId === 'dashboard') {
                 updateDashboard();
+                displayDailyWorkSummary(); // Ensure work summary is updated
+                displayDailyShiftSummary(); // Ensure shift summary is updated
+            } else if (sectionId === 'groups') {
+                populateGroupDropdowns();
+                updateAvailableStaffDropdown();
+                document.getElementById('groupMembers').innerHTML = 'Select a group to view members'; // Clear members on section change
+            } else if (sectionId === 'staff-management') {
+                populateStaffDropdowns();
+                document.getElementById('addStaffForm').style.display = 'none'; // Hide add staff form initially
+            } else if (sectionId === 'shifts') {
+                populateShiftGroupDropdowns(); // Ensure latest groups are loaded for shift dropdowns
+                populateLeaveStaffDropdowns(); // Ensure latest staff list is loaded for leaves forms
+                loadShiftDataForDate(); // Reload shift data for the current date
             }
         }
-        
-        // Update dashboard statistics
+
+        // Dashboard Updates
         function updateDashboard() {
+            document.getElementById('totalStaff').textContent = staff.length;
             document.getElementById('totalGroups').textContent = Object.keys(groups).length;
             document.getElementById('totalWork').textContent = workEntries.length;
             document.getElementById('reportWorkEntries').textContent = workEntries.length;
             document.getElementById('reportActiveGroups').textContent = Object.keys(groups).length;
+            saveData(); // Save data on dashboard update
         }
-        
-        // Add employee to shift
-        function addEmployee(containerId) {
-            const container = document.getElementById(containerId);
-            const row = document.createElement('div');
-            row.className = 'employee-row';
-            
-            let staffOptions = '<option value="">Select Employee</option>';
-            staff.forEach(person => {
-                staffOptions += `<option value="${person.rc}">${person.name} (${person.rc})</option>`;
-            });
-            
-            row.innerHTML = `
-                <select onchange="fillRC(this)" class="form-select">
-                    ${staffOptions}
-                </select>
-                <input type="text" placeholder="RC #" readonly class="form-input">
-                <select class="form-select">
-                    <option value="">Status</option>
-                    <option value="Present">Present</option>
-                    <option value="Absent">Absent</option>
-                    <option value="Late">Late</option>
-                    <option value="SL">Sick Leave</option>
-                    <option value="FRL">FRL</option>
-                </select>
+
+        // Daily Work Summary for Dashboard
+        function displayDailyWorkSummary() {
+            const selectedDate = document.getElementById('workSummaryDate').value;
+            const summaryContentDiv = document.getElementById('dailyWorkSummaryContent');
+            summaryContentDiv.innerHTML = ''; // Clear previous content
+
+            if (!selectedDate) {
+                summaryContentDiv.textContent = 'Please select a date to view work details.';
+                return;
+            }
+
+            const dailyWork = workEntries.filter(entry => entry.logTime.startsWith(selectedDate));
+
+            if (dailyWork.length === 0) {
+                summaryContentDiv.textContent = `No work entries found for ${selectedDate}.`;
+                return;
+            }
+
+            let html = `
+                <table class="data-table" style="width:100%; border-collapse: collapse; margin-top: 1rem;">
+                    <thead>
+                        <tr style="background-color: var(--primary-light);">
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Time</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Department</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Task</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Staff</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Status</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
             `;
+
+            dailyWork.forEach(entry => {
+                const staffNames = entry.assignedStaffs.map(rc => {
+                    const member = staff.find(s => s.rc === rc);
+                    return member ? `${member.name} (${member.rc})` : rc;
+                }).join(', ');
+
+                html += `
+                    <tr>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.logTime.split('T')[1] || 'N/A'}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.department}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.task}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${staffNames}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.status}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.workDetails}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+            summaryContentDiv.innerHTML = html;
+        }
+
+        // Daily Shift Summary for Dashboard
+        function displayDailyShiftSummary() {
+            const selectedDate = document.getElementById('shiftSummaryDate').value;
+            const summaryContentDiv = document.getElementById('dailyShiftSummaryContent');
+            summaryContentDiv.innerHTML = ''; // Clear previous content
+
+            if (!selectedDate) {
+                summaryContentDiv.textContent = 'Please select a date to view shift details.';
+                return;
+            }
+
+            const dailyShiftData = shiftDataByDate[selectedDate];
+
+            if (!dailyShiftData || Object.keys(dailyShiftData).length === 1 && dailyShiftData.locked !== undefined) { // Only 'locked' key exists
+                summaryContentDiv.textContent = `No shift data found for ${selectedDate}.`;
+                return;
+            }
+
+            let html = '';
+            const shiftMapping = {
+                'inchargeA2': 'Shift A (In-charge)', 'membersA2': 'Shift A (Members)',
+                'inchargeB2': 'Shift B (In-charge)', 'membersB2': 'Shift B (Members)',
+                'inchargeC2': 'Shift C (In-charge)', 'membersC2': 'Shift C (Members)'
+            };
+
+            for (const shiftKey in shiftMapping) {
+                if (dailyShiftData[shiftKey] && Object.keys(dailyShiftData[shiftKey]).length > 0) {
+                    html += `
+                        <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--primary);">${shiftMapping[shiftKey]}</h3>
+                        <table class="data-table" style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+                            <thead>
+                                <tr style="background-color: var(--primary-light);">
+                                    <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Staff Name (RC)</th>
+                                    <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Attendance</th>
+                                    <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Performance</th>
+                                    <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    for (const staffRc in dailyShiftData[shiftKey]) {
+                        const staffMember = staff.find(s => s.rc === staffRc);
+                        if (staffMember) {
+                            const data = dailyShiftData[shiftKey][staffRc]; 
+                            let leaveInfo = '';
+                            if (['Sick Leave', 'Family Leave', 'Annual Leave'].includes(data.attendance)) {
+                                leaveInfo = `<span class="leave-info">(On ${data.attendance})</span>`;
+                            }
+                            const sickStaffRc = Object.keys(sickLeaveAssignments).find(key => sickLeaveAssignments[key] === staffRc);
+                            if (sickStaffRc) {
+                                const sickStaffName = staff.find(s => s.rc === sickStaffRc)?.name || 'Unknown';
+                                leaveInfo += `<span class="leave-info">(Replacing ${sickStaffName})</span>`;
+                            }
+                            if (data.attendance === 'Sick Leave' && sickLeaveAssignments[staffMember.rc]) {
+                                const replacementStaffName = staff.find(s => s.rc === sickLeaveAssignments[staffMember.rc])?.name || 'Unknown';
+                                leaveInfo += `<span class="leave-info">(Replaced by ${replacementStaffName})</span>`;
+                            }
+
+                            html += `
+                                <tr>
+                                    <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${staffMember.name} (${staffMember.rc}) ${leaveInfo}</td>
+                                    <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${data.attendance || 'N/A'}</td>
+                                    <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${data.performance || 'N/A'}</td>
+                                    <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${data.remarks || 'N/A'}</td>
+                                </tr>
+                            `;
+                        }
+                    }
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
+                }
+            }
+            summaryContentDiv.innerHTML = html;
+        }
+
+
+        // Staff Management Functions
+        function populateStaffDropdowns() {
+            const editStaffSelect = document.getElementById('editStaffSelect');
+            editStaffSelect.innerHTML = '<option value="">Select a staff member</option>';
+            staff.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.rc;
+                option.textContent = `${member.name} (${member.rc})`;
+                editStaffSelect.appendChild(option);
+            });
+            updateAvailableStaffDropdown();
+        }
+
+        function showAddStaffForm() {
+            document.getElementById('addStaffForm').style.display = 'block';
+            document.getElementById('newStaffName').value = '';
+            document.getElementById('newStaffRC').value = '';
+            document.getElementById('addStaffMessage').innerHTML = '';
+        }
+
+        function addNewStaff() {
+            const newStaffName = document.getElementById('newStaffName').value.trim();
+            const newStaffRC = document.getElementById('newStaffRC').value.trim();
+            const messageDiv = document.getElementById('addStaffMessage');
+
+            if (!newStaffName || !newStaffRC) {
+                showMessage(messageDiv, 'Please enter both staff name and RC.', 'error');
+                return;
+            }
+            if (staff.some(s => s.rc === newStaffRC)) {
+                showMessage(messageDiv, 'Staff with this RC already exists.', 'error');
+                return;
+            }
+
+            staff.push({ name: newStaffName, rc: newStaffRC, assignedToGroup: null, onLeave: false });
+            showMessage(messageDiv, `Staff ${newStaffName} (${newStaffRC}) added successfully!`, 'success');
+            document.getElementById('newStaffName').value = '';
+            document.getElementById('newStaffRC').value = '';
+            populateStaffDropdowns();
+            populateLeaveStaffDropdowns();
+            updateDashboard();
+        }
+
+        function loadStaffForEdit() {
+            const rc = document.getElementById('editStaffSelect').value;
+            const selectedStaff = staff.find(s => s.rc === rc);
+            if (selectedStaff) {
+                document.getElementById('editStaffName').value = selectedStaff.name;
+                document.getElementById('editStaffRC').value = selectedStaff.rc;
+            } else {
+                document.getElementById('editStaffName').value = '';
+                document.getElementById('editStaffRC').value = '';
+            }
+            document.getElementById('editStaffMessage').innerHTML = '';
+        }
+
+        function updateStaff() {
+            const originalRc = document.getElementById('editStaffSelect').value;
+            const newName = document.getElementById('editStaffName').value.trim();
+            const newRc = document.getElementById('editStaffRC').value.trim();
+            const messageDiv = document.getElementById('editStaffMessage');
+
+            if (!originalRc) {
+                showMessage(messageDiv, 'Please select a staff member to update.', 'error');
+                return;
+            }
+            if (!newName || !newRc) {
+                showMessage(messageDiv, 'Staff name and RC cannot be empty.', 'error');
+                return;
+            }
+            if (newRc !== originalRc && staff.some(s => s.rc === newRc)) {
+                showMessage(messageDiv, 'Another staff member already has this RC.', 'error');
+                return;
+            }
+
+            const staffIndex = staff.findIndex(s => s.rc === originalRc);
+            if (staffIndex !== -1) {
+                staff[staffIndex].name = newName;
+                
+                if (staff[staffIndex].rc !== newRc) {
+                    const oldRc = staff[staffIndex].rc;
+                    staff[staffIndex].rc = newRc;
+
+                    for (const groupName in groups) {
+                        const group = groups[groupName];
+                        const memberIndex = group.members.indexOf(oldRc);
+                        if (memberIndex !== -1) {
+                            group.members[memberIndex] = newRc;
+                        }
+                    }
+                    emergencyLeaves.forEach(leave => {
+                        if (leave.staffRc === oldRc) leave.staffRc = newRc;
+                    });
+                    if (sickLeaveAssignments[oldRc]) {
+                        sickLeaveAssignments[newRc] = sickLeaveAssignments[oldRc];
+                        delete sickLeaveAssignments[oldRc];
+                    }
+                    for (const dateKey in shiftDataByDate) {
+                        for (const shiftKey in shiftDataByDate[dateKey]) {
+                            if (shiftDataByDate[dateKey][shiftKey][oldRc]) {
+                                shiftDataByDate[dateKey][shiftKey][newRc] = shiftDataByDate[dateKey][shiftKey][oldRc];
+                                delete shiftDataByDate[dateKey][shiftKey][oldRc];
+                            }
+                        }
+                    }
+                }
+                
+                showMessage(messageDiv, 'Staff updated successfully!', 'success');
+                populateStaffDropdowns();
+                populateLeaveStaffDropdowns();
+                document.getElementById('editStaffSelect').value = newRc;
+                updateDashboard();
+            } else {
+                showMessage(messageDiv, 'Staff not found.', 'error');
+            }
+        }
+
+        function deleteStaff() {
+            const rcToDelete = document.getElementById('editStaffSelect').value;
+            const messageDiv = document.getElementById('editStaffMessage');
+
+            if (!rcToDelete) {
+                showMessage(messageDiv, 'Please select a staff member to delete.', 'error');
+                return;
+            }
+            const confirmDelete = document.createElement('div');
+            confirmDelete.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                z-index: 1000; text-align: center;
+            `;
+            confirmDelete.innerHTML = `
+                <p>Are you sure you want to delete this staff member? This action cannot be undone.</p>
+                <div style="margin-top: 15px;">
+                    <button class="btn btn-danger" id="confirmDeleteYes">Yes, Delete</button>
+                    <button class="btn btn-secondary" id="confirmDeleteNo" style="margin-left: 10px;">Cancel</button>
+                </div>
+            `;
+            document.body.appendChild(confirmDelete);
+
+            document.getElementById('confirmDeleteYes').onclick = () => {
+                staff = staff.filter(s => s.rc !== rcToDelete);
+
+                for (const groupName in groups) {
+                    groups[groupName].members = groups[groupName].members.filter(rc => rc !== rcToDelete);
+                }
+                
+                emergencyLeaves = emergencyLeaves.filter(leave => leave.staffRc !== rcToDelete);
+
+                delete sickLeaveAssignments[rcToDelete];
+                for (const sickRc in sickLeaveAssignments) {
+                    if (sickLeaveAssignments[sickRc] === rcToDelete) {
+                        delete sickLeaveAssignments[sickRc];
+                    }
+                }
+
+                for (const dateKey in shiftDataByDate) {
+                    for (const shiftKey in shiftDataByDate[dateKey]) {
+                        delete shiftDataByDate[dateKey][shiftKey][rcToDelete];
+                    }
+                }
+
+                showMessage(messageDiv, 'Staff deleted successfully!', 'success');
+                document.getElementById('editStaffName').value = '';
+                document.getElementById('editStaffRC').value = '';
+                populateStaffDropdowns();
+                populateLeaveStaffDropdowns();
+                updateDashboard();
+                document.body.removeChild(confirmDelete);
+            };
+
+            document.getElementById('confirmDeleteNo').onclick = () => {
+                document.body.removeChild(confirmDelete); // Use confirmDelete here
+            };
+        }
+
+        // Group Management Functions
+        function populateGroupDropdowns() {
+            const selectGroup = document.getElementById('selectGroup');
+            const assignedGroup = document.getElementById('assignedGroup');
             
-            container.appendChild(row);
+            selectGroup.innerHTML = '<option value="">Select a group</option>';
+            assignedGroup.innerHTML = '<option value="">Select Group</option>';
+
+            for (const groupName in groups) {
+                const option1 = document.createElement('option');
+                option1.value = groupName;
+                option1.textContent = `${groupName} (${groups[groupName].type === 'incharge' ? 'In-charge' : 'Normal'})`;
+                selectGroup.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = groupName;
+                option2.textContent = `${groupName} (${groups[groupName].type === 'incharge' ? 'In-charge' : 'Normal'})`;
+                assignedGroup.appendChild(option2);
+            }
+            populateShiftGroupDropdowns();
+            updateDashboard();
         }
-        
-        // Fill RC number when employee is selected
-        function fillRC(select) {
-            const rc = select.value;
-            const rcInput = select.parentElement.querySelector('input');
-            rcInput.value = rc;
+
+        function showCreateGroupForm() {
+            document.getElementById('createGroupForm').style.display = 'block';
+            document.getElementById('groupName').value = '';
+            document.getElementById('groupMessage').innerHTML = '';
         }
-        
-        // Create new group
+
         function createGroup() {
-            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-            
-            if (currentUser.role === 'staff') {
-                alert('Only admins and managers can create groups');
-                return;
-            }
-            
             const groupName = document.getElementById('groupName').value.trim();
+            const groupType = document.getElementById('groupType').value;
             const messageDiv = document.getElementById('groupMessage');
-            
+
             if (!groupName) {
-                showMessage(messageDiv, 'Please enter a group name', 'error');
+                showMessage(messageDiv, 'Please enter a group name.', 'error');
                 return;
             }
-            
             if (groups[groupName]) {
-                showMessage(messageDiv, 'Group already exists', 'error');
+                showMessage(messageDiv, 'Group with this name already exists.', 'error');
                 return;
             }
-            
-            groups[groupName] = [];
+
+            groups[groupName] = { type: groupType, members: [] };
+            showMessage(messageDiv, `Group "${groupName}" (${groupType}) created successfully!`, 'success');
             document.getElementById('groupName').value = '';
             populateGroupDropdowns();
             updateDashboard();
-            showMessage(messageDiv, `Group "${groupName}" created successfully!`, 'success');
         }
-        
-        // Show group members
+
+        function updateAvailableStaffDropdown() {
+            const availableStaffSelect = document.getElementById('availableStaff');
+            availableStaffSelect.innerHTML = '';
+            const selectedGroup = document.getElementById('selectGroup').value;
+            const groupMembersRcs = selectedGroup ? groups[selectedGroup].members : [];
+
+            const unassignedStaff = staff.filter(s => !groupMembersRcs.includes(s.rc));
+
+            unassignedStaff.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.rc;
+                option.textContent = `${member.name} (${member.rc})`;
+                availableStaffSelect.appendChild(option);
+            });
+        }
+
         function showGroupMembers() {
             const groupName = document.getElementById('selectGroup').value;
-            const membersDiv = document.getElementById('groupMembers');
+            const groupMembersDiv = document.getElementById('groupMembers');
+            groupMembersDiv.innerHTML = '';
             
-            if (!groupName) {
-                membersDiv.innerHTML = 'Select a group to view members';
-                return;
-            }
-            
-            const members = groups[groupName];
-            if (!members || members.length === 0) {
-                membersDiv.innerHTML = 'No members in this group';
-                return;
-            }
-            
-            let html = '';
-            members.forEach(rc => {
-                const person = staff.find(s => s.rc === rc);
-                if (person) {
-                    html += `<span class="member-tag">
-                        ${person.name} (${person.rc})
-                        <button class="remove-btn" onclick="removeFromGroupDirect('${rc}')" title="Remove">×</button>
-                    </span>`;
+            if (groupName && groups[groupName]) {
+                const members = groups[groupName].members;
+                if (members.length === 0) {
+                    groupMembersDiv.textContent = 'This group has no members yet.';
+                } else {
+                    members.forEach(rc => {
+                        const member = staff.find(s => s.rc === rc);
+                        if (member) {
+                            const memberTag = document.createElement('span');
+                            memberTag.classList.add('member-tag');
+                            memberTag.innerHTML = `${member.name} (${member.rc}) <button class="remove-btn" onclick="removeFromGroup('${rc}', '${groupName}')">&times;</button>`;
+                            groupMembersDiv.appendChild(memberTag);
+                        }
+                    });
                 }
-            });
-            
-            membersDiv.innerHTML = html;
+            } else {
+                groupMembersDiv.textContent = 'Select a group to view members';
+            }
+            updateAvailableStaffDropdown();
         }
-        
-        // Add selected staff to group
+
         function addToGroup() {
             const groupName = document.getElementById('selectGroup').value;
-            const selectedOptions = document.getElementById('availableStaff').selectedOptions;
-            
+            const availableStaffSelect = document.getElementById('availableStaff');
+            const messageDiv = document.getElementById('groupMessage');
+
             if (!groupName) {
-                alert('Please select a group first');
+                showMessage(messageDiv, 'Please select a group first.', 'error');
                 return;
             }
-            
-            if (selectedOptions.length === 0) {
-                alert('Please select staff members to add');
+            if (availableStaffSelect.selectedOptions.length === 0) {
+                showMessage(messageDiv, 'Please select staff to add.', 'error');
                 return;
             }
-            
-            Array.from(selectedOptions).forEach(option => {
-                const rc = option.value;
-                const staffMember = staff.find(s => s.rc === rc);
-                
-                // Check if staff is already in a group
-                if (staffMember.assignedToGroup && staffMember.assignedToGroup !== groupName) {
-                    alert(`${staffMember.name} is already assigned to group ${staffMember.assignedToGroup}`);
-                    return;
-                }
-                
-                if (!groups[groupName].includes(rc)) {
-                    groups[groupName].push(rc);
-                    staffMember.assignedToGroup = groupName;
+
+            const selectedRcs = Array.from(availableStaffSelect.selectedOptions).map(option => option.value);
+            selectedRcs.forEach(rc => {
+                if (!groups[groupName].members.includes(rc)) {
+                    groups[groupName].members.push(rc);
+                    const staffMember = staff.find(s => s.rc === rc);
+                    if (staffMember) {
+                        staffMember.assignedToGroup = groupName;
+                    }
                 }
             });
-            
+            showMessage(messageDiv, 'Staff added to group successfully!', 'success');
             showGroupMembers();
             updateDashboard();
-            updateAvailableStaffDropdown();
-            alert(`${selectedOptions.length} member(s) added to ${groupName}`);
         }
-        
-        // Remove from group
-        function removeFromGroup() {
-            const groupName = document.getElementById('selectGroup').value;
-            const selectedOptions = document.getElementById('availableStaff').selectedOptions;
-            
+
+        function removeFromGroup(rcToRemove = null, groupNameFromTag = null) {
+            const groupName = groupNameFromTag || document.getElementById('selectGroup').value;
+            const messageDiv = document.getElementById('groupMessage');
+
             if (!groupName) {
-                alert('Please select a group first');
+                showMessage(messageDiv, 'Please select a group first.', 'error');
                 return;
             }
-            
-            Array.from(selectedOptions).forEach(option => {
-                const rc = option.value;
-                const index = groups[groupName].indexOf(rc);
-                if (index > -1) {
-                    groups[groupName].splice(index, 1);
-                    const staffMember = staff.find(s => s.rc === rc);
+
+            let rcsToDelete = [];
+            if (rcToRemove) {
+                rcsToDelete.push(rcToRemove);
+            } else {
+                showMessage(messageDiv, 'To remove staff, click the "x" next to their name.', 'error');
+                return;
+            }
+
+            if (rcsToDelete.length === 0) {
+                showMessage(messageDiv, 'No staff selected to remove.', 'error');
+                return;
+            }
+
+            rcsToDelete.forEach(rc => {
+                groups[groupName].members = groups[groupName].members.filter(memberRc => memberRc !== rc);
+                const staffMember = staff.find(s => s.rc === rc);
+                if (staffMember && staffMember.assignedToGroup === groupName) {
                     staffMember.assignedToGroup = null;
                 }
             });
-            
+            showMessage(messageDiv, 'Staff removed from group successfully!', 'success');
             showGroupMembers();
             updateDashboard();
-            updateAvailableStaffDropdown();
-            alert('Members removed from group');
         }
-        
-        // Remove from group directly
-        function removeFromGroupDirect(rc) {
-            const groupName = document.getElementById('selectGroup').value;
-            const index = groups[groupName].indexOf(rc);
-            if (index > -1) {
-                groups[groupName].splice(index, 1);
-                const staffMember = staff.find(s => s.rc === rc);
-                staffMember.assignedToGroup = null;
-                showGroupMembers();
-                updateDashboard();
-                updateAvailableStaffDropdown();
-            }
-        }
-        
-        // Select work status
+
+        // Work Details Functions
         function selectStatus(button, status) {
             document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
             selectedStatus = status;
         }
-        
-        // Save work details
+
+        function updateAssignedStaffDropdown(selectedGroupName) {
+            const assignedStaffsSelect = document.getElementById('assignedStaffs');
+            assignedStaffsSelect.innerHTML = '';
+            
+            if (selectedGroupName && groups[selectedGroupName]) {
+                const membersRcs = groups[selectedGroupName].members;
+                const members = staff.filter(s => membersRcs.includes(s.rc));
+                members.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.rc;
+                    option.textContent = `${member.name} (${member.rc})`;
+                    assignedStaffsSelect.appendChild(option);
+                });
+            }
+        }
+
         function saveWorkDetails() {
-            const messageDiv = document.getElementById('workMessage');
-            
-            if (!selectedStatus) {
-                showMessage(messageDiv, 'Please select a status', 'error');
-                return;
-            }
-            
+            const logTime = document.getElementById('logTime').value;
+            const department = document.getElementById('department').value;
+            const task = document.getElementById('task').value.trim();
             const assignedGroup = document.getElementById('assignedGroup').value;
-            if (!assignedGroup) {
-                showMessage(messageDiv, 'Please select a group', 'error');
+            const assignedShift = document.getElementById('assignedShift').value;
+            const assignedStaffs = Array.from(document.getElementById('assignedStaffs').selectedOptions).map(option => option.value);
+            const attendTime = document.getElementById('attendTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const workDetailsText = document.getElementById('workDetails').value.trim();
+            const reason = document.getElementById('reason').value.trim();
+            const messageDiv = document.getElementById('workMessage');
+
+            if (!logTime || !department || !task || !assignedGroup || !assignedShift || assignedStaffs.length === 0 || !selectedStatus) {
+                showMessage(messageDiv, 'Please fill in all required fields (Log Time, Department, Task, Assigned Group, Assigned Shift, Assigned Staff, Status).', 'error');
                 return;
             }
-            
-            const assignedStaffs = Array.from(document.getElementById('assignedStaffs').selectedOptions).map(o => o.value);
-            if (assignedStaffs.length === 0) {
-                showMessage(messageDiv, 'Please select at least one staff member', 'error');
-                return;
-            }
-            
-            const workEntry = {
-                logTime: document.getElementById('logTime').value,
-                department: document.getElementById('department').value,
-                task: document.getElementById('task').value,
-                assignedGroup: assignedGroup,
-                workDetails: document.getElementById('workDetails').value,
-                assignedShift: document.getElementById('assignedShift').value,
-                assignedStaffs: assignedStaffs,
-                attendTime: document.getElementById('attendTime').value,
+
+            const newWorkEntry = {
+                id: Date.now(),
+                logTime,
+                department,
+                task,
+                assignedGroup,
+                assignedShift,
+                assignedStaffs,
+                attendTime: attendTime || 'N/A',
+                endTime: endTime || 'N/A',
                 status: selectedStatus,
-                endTime: document.getElementById('endTime').value,
-                reason: document.getElementById('reason').value,
-                timestamp: new Date().toLocaleString()
+                workDetails: workDetailsText,
+                reason: reason || 'N/A'
             };
-            
-            workEntries.push(workEntry);
-            updateDashboard();
+
+            workEntries.push(newWorkEntry);
             showMessage(messageDiv, 'Work details saved successfully!', 'success');
             clearWorkForm();
+            updateDashboard();
+            displayDailyWorkSummary();
         }
-        
-        // Clear work form
+
         function clearWorkForm() {
-            document.getElementById('logTime').value = new Date().toISOString().slice(0, 16);
+            document.getElementById('logTime').value = '';
             document.getElementById('department').value = '';
             document.getElementById('task').value = '';
             document.getElementById('assignedGroup').value = '';
-            document.getElementById('workDetails').value = '';
+            document.getElementById('assignedStaffs').innerHTML = '';
             document.getElementById('assignedShift').value = '';
             document.getElementById('attendTime').value = '';
             document.getElementById('endTime').value = '';
+            document.getElementById('workDetails').value = '';
             document.getElementById('reason').value = '';
-            document.getElementById('assignedStaffs').innerHTML = '';
             document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('selected'));
             selectedStatus = '';
         }
-        
-        // Save all data
-        function saveAllData() {
-            const messageDiv = document.getElementById('reportMessage');
-            const allData = {
-                groups: groups,
-                staff: staff,
-                workEntries: workEntries,
-                timestamp: new Date().toLocaleString()
-            };
-            
-            console.log('All data saved:', allData);
-            showMessage(messageDiv, 'All data saved successfully!', 'success');
+
+        // Shift Management Functions
+        function loadShiftDataForDate() {
+            currentShiftDate = document.getElementById('shiftDate').value;
+            if (!currentShiftDate) {
+                currentShiftDate = getTodayDate();
+                document.getElementById('shiftDate').value = currentShiftDate;
+            }
+
+            const shiftDisplayDivs = [
+                'inchargeA2Members', 'membersA2Members', 'inchargeB2Members', 'membersB2Members', 'inchargeC2Members', 'membersC2Members'
+            ];
+            shiftDisplayDivs.forEach(divId => {
+                const div = document.getElementById(divId);
+                if (div) div.innerHTML = '';
+            });
+
+            populateShiftGroupDropdowns();
+            updateShiftLockState();
         }
-        
-        // Download report
-        function downloadReport() {
-            const messageDiv = document.getElementById('reportMessage');
-            
-            let report = `SHIFT MANAGEMENT REPORT\n`;
-            report += `Generated: ${new Date().toLocaleString()}\n`;
-            report += `${'='.repeat(50)}\n\n`;
-            
-            // Groups
-            report += `GROUPS (${Object.keys(groups).length}):\n`;
-            Object.keys(groups).forEach(groupName => {
-                report += `  ${groupName}: ${groups[groupName].length} members\n`;
-                groups[groupName].forEach(rc => {
-                    const person = staff.find(s => s.rc === rc);
-                    report += `    - ${person.name} (${person.rc})\n`;
+
+        function populateShiftGroupDropdowns() {
+            const shiftDropdowns = [
+                'inchargeA2', 'membersA2', 'inchargeB2', 'membersB2', 'inchargeC2', 'membersC2'
+            ];
+
+            shiftDropdowns.forEach(id => {
+                const selectElement = document.getElementById(id);
+                let currentSelectedGroupName = '';
+                if (shiftDataByDate[currentShiftDate] && shiftDataByDate[currentShiftDate][id]) {
+                    const firstStaffRc = Object.keys(shiftDataByDate[currentShiftDate][id])[0];
+                    if (firstStaffRc) {
+                        const staffMember = staff.find(s => s.rc === firstStaffRc);
+                        if (staffMember && staffMember.assignedToGroup) {
+                            currentSelectedGroupName = staffMember.assignedToGroup;
+                        }
+                    }
+                }
+                
+                selectElement.innerHTML = `<option value="">Select ${id.includes('incharge') ? 'In-charge' : 'Members'} Group</option>`;
+                const groupTypeFilter = id.includes('incharge') ? 'incharge' : 'normal';
+
+                for (const groupName in groups) {
+                    if (groups[groupName].type === groupTypeFilter) {
+                        const option = document.createElement('option');
+                        option.value = groupName;
+                        option.textContent = groupName;
+                        selectElement.appendChild(option);
+                    }
+                }
+                if (Array.from(selectElement.options).some(opt => opt.value === currentSelectedGroupName)) {
+                    selectElement.value = currentSelectedGroupName;
+                    displayGroupMembers(id, currentSelectedGroupName, groupTypeFilter);
+                } else {
+                    document.getElementById(id + 'Members').innerHTML = '';
+                }
+            });
+            checkAndDisplaySickLeaveReplacementSection();
+        }
+
+        function displayGroupMembers(selectId, groupName, groupType) {
+            const displayDivId = selectId + 'Members';
+            const displayDiv = document.getElementById(displayDivId);
+            displayDiv.innerHTML = '';
+
+            const isLocked = shiftDataByDate[currentShiftDate]?.locked || false;
+            const canEdit = currentUser && (currentUser.role === 'incharge' || currentUser.role === 'manager' || currentUser.role === 'admin');
+            const disabledAttribute = (isLocked || !canEdit) ? 'disabled' : '';
+
+            const groupSelectElement = document.getElementById(selectId);
+            if (groupSelectElement) {
+                groupSelectElement.disabled = (isLocked || !canEdit);
+            }
+
+
+            if (groupName && groups[groupName]) {
+                const members = groups[groupName].members;
+                const shiftKey = selectId;
+
+                if (!shiftDataByDate[currentShiftDate]) {
+                    shiftDataByDate[currentShiftDate] = {};
+                }
+                if (!shiftDataByDate[currentShiftDate][shiftKey]) {
+                    shiftDataByDate[currentShiftDate][shiftKey] = {};
+                }
+
+                if (members.length === 0) {
+                    displayDiv.textContent = 'This group has no members yet.';
+                } else {
+                    const headersRow = document.createElement('div');
+                    headersRow.classList.add('employee-row');
+                    headersRow.style.fontWeight = 'bold';
+                    headersRow.innerHTML = `
+                        <div class="member-info">Staff Name (RC)</div>
+                        <div class="employee-details">
+                            <div style="text-align: center;">Attendance</div>
+                            <div style="text-align: center;">Performance</div>
+                            <div style="text-align: center;">Remarks</div>
+                        </div>
+                    `;
+                    displayDiv.appendChild(headersRow);
+
+                    members.forEach(rc => {
+                        const staffMember = staff.find(s => s.rc === rc);
+                        if (staffMember) {
+                            const savedData = shiftDataByDate[currentShiftDate][shiftKey]?.[staffMember.rc] || {
+                                attendance: '',
+                                performance: '',
+                                remarks: ''
+                            };
+
+                            const isLeaveStatus = ['Sick Leave', 'Family Leave', 'Annual Leave'].includes(savedData.attendance);
+                            const performanceDisabled = (isLeaveStatus || isLocked || !canEdit) ? 'disabled' : '';
+                            const remarksDisabled = (isLeaveStatus || isLocked || !canEdit) ? 'disabled' : '';
+
+                            let leaveInfo = '';
+                            if (isLeaveStatus) {
+                                leaveInfo = `<span class="leave-info">(On ${savedData.attendance})</span>`;
+                            } 
+                            const replacedForRc = Object.keys(sickLeaveAssignments).find(key => sickLeaveAssignments[key] === staffMember.rc);
+                            if (replacedForRc) {
+                                const replacedForStaffName = staff.find(s => s.rc === replacedForRc)?.name || 'Unknown';
+                                leaveInfo += `<span class="leave-info">(Replacing ${replacedForStaffName})</span>`;
+                            }
+                            if (savedData.attendance === 'Sick Leave' && sickLeaveAssignments[staffMember.rc]) {
+                                const replacementStaffName = staff.find(s => s.rc === sickLeaveAssignments[staffMember.rc])?.name || 'Unknown';
+                                leaveInfo += `<span class="leave-info">(Replaced by ${replacementStaffName})</span>`;
+                            }
+
+
+                            const employeeRow = document.createElement('div');
+                            employeeRow.classList.add('employee-row');
+                            employeeRow.innerHTML = `
+                                <div class="member-info">${staffMember.name} (${staffMember.rc}) ${leaveInfo}</div>
+                                <div class="employee-details">
+                                    <select class="attendance-status" data-shift-key="${shiftKey}" data-staff-rc="${staffMember.rc}" onchange="updateAttendancePerformance(this)" ${disabledAttribute}>
+                                        <option value=""></option>
+                                        <option value="Present">Present</option>
+                                        <option value="Late">Late</option>
+                                        <option value="Absent">Absent</option>
+                                        <option value="Sick Leave">Sick Leave</option>
+                                        <option value="Family Leave">Family Leave</option>
+                                        <option value="Annual Leave">Annual Leave</option>
+                                    </select>
+                                    <select class="performance-status" data-shift-key="${shiftKey}" data-staff-rc="${staffMember.rc}" onchange="updateAttendancePerformance(this)" ${disabledAttribute} ${performanceDisabled}>
+                                        <option value=""></option>
+                                        <option value="Excellent">Excellent</option>
+                                        <option value="Very good">Very good</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Satisfactory">Satisfactory</option>
+                                        <option value="Needs Improvement">Needs Improvement</option>
+                                    </select>
+                                    <input type="text" class="remarks-field" placeholder="Remarks" data-shift-key="${shiftKey}" data-staff-rc="${staffMember.rc}" onchange="updateAttendancePerformance(this)" ${disabledAttribute} ${remarksDisabled}>
+                                </div>
+                            `;
+                            displayDiv.appendChild(employeeRow);
+
+                            employeeRow.querySelector('.attendance-status').value = savedData.attendance;
+                            employeeRow.querySelector('.performance-status').value = savedData.performance;
+                            employeeRow.querySelector('.remarks-field').value = savedData.remarks;
+                            
+                            employeeRow.querySelector('.attendance-status').dataset.originalValue = savedData.attendance;
+                            employeeRow.querySelector('.performance-status').dataset.originalValue = savedData.performance;
+                            employeeRow.querySelector('.remarks-field').dataset.originalValue = savedData.remarks;
+                        }
+                    });
+                }
+            } else {
+                displayDiv.textContent = 'No group selected or group has no members.';
+            }
+            checkAndDisplaySickLeaveReplacementSection();
+        }
+
+        function updateAttendancePerformance(element) {
+            if (!currentUser || (currentUser.role !== 'incharge' && currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+                showMessage(document.getElementById('appContainer'), 'You do not have permission to edit attendance or performance.', 'error');
+                element.value = element.dataset.originalValue || '';
+                return;
+            }
+
+            const shiftKey = element.dataset.shiftKey;
+            const staffRc = element.dataset.staffRc;
+
+            if (!shiftDataByDate[currentShiftDate]) {
+                shiftDataByDate[currentShiftDate] = {};
+            }
+            if (!shiftDataByDate[currentShiftDate][shiftKey]) {
+                shiftDataByDate[currentShiftDate][shiftKey] = {};
+            }
+            if (!shiftDataByDate[currentShiftDate][shiftKey][staffRc]) {
+                shiftDataByDate[currentShiftDate][shiftKey][staffRc] = {
+                    attendance: '',
+                    performance: '',
+                    remarks: ''
+                };
+            }
+
+            if (element.classList.contains('attendance-status')) {
+                shiftDataByDate[currentShiftDate][shiftKey][staffRc].attendance = element.value;
+                const isLeaveStatus = ['Sick Leave', 'Family Leave', 'Annual Leave'].includes(element.value);
+                const performanceSelect = element.parentNode.querySelector('.performance-status');
+                const remarksInput = element.parentNode.querySelector('.remarks-field');
+                
+                if (performanceSelect) performanceSelect.disabled = isLeaveStatus;
+                if (remarksInput) remarksInput.disabled = isLeaveStatus;
+
+                if (isLeaveStatus) {
+                    if (performanceSelect) performanceSelect.value = '';
+                    if (remarksInput) remarksInput.value = '';
+                    shiftDataByDate[currentShiftDate][shiftKey][staffRc].performance = '';
+                    shiftDataByDate[currentShiftDate][shiftKey][staffRc].remarks = '';
+                }
+
+                const staffMember = staff.find(s => s.rc === staffRc);
+                if (staffMember) {
+                    staffMember.onLeave = isLeaveStatus;
+                }
+
+            } else if (element.classList.contains('performance-status')) {
+                shiftDataByDate[currentShiftDate][shiftKey][staffRc].performance = element.value;
+            } else if (element.classList.contains('remarks-field')) {
+                shiftDataByDate[currentShiftDate][shiftKey][staffRc].remarks = element.value;
+            }
+            saveData();
+            element.dataset.originalValue = element.value;
+            checkAndDisplaySickLeaveReplacementSection();
+        }
+
+        function saveShiftData() {
+            if (!currentUser || (currentUser.role !== 'incharge' && currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+                showMessage(document.getElementById('appContainer'), 'You do not have permission to save shift data.', 'error');
+                return;
+            }
+
+            if (!currentShiftDate) {
+                showMessage(document.getElementById('appContainer'), 'Please select a date before saving shift data.', 'error');
+                return;
+            }
+
+            if (!shiftDataByDate[currentShiftDate]) {
+                shiftDataByDate[currentShiftDate] = {};
+            }
+            shiftDataByDate[currentShiftDate].locked = true;
+            saveData();
+            showMessage(document.getElementById('appContainer'), `Shift data for ${currentShiftDate} saved and locked successfully!`, 'success');
+            updateShiftLockState();
+            loadShiftDataForDate();
+        }
+
+        function updateShiftLockState() {
+            const isLocked = shiftDataByDate[currentShiftDate]?.locked || false;
+            const canEdit = currentUser && (currentUser.role === 'incharge' || currentUser.role === 'manager' && currentUser.role === 'admin');
+
+            document.getElementById('saveShiftDataBtn').style.display = isLocked ? 'none' : 'inline-block';
+            document.getElementById('unlockShiftBtn').style.display = isLocked ? 'inline-block' : 'none';
+
+            const shiftInputElements = document.querySelectorAll('#shifts select, #shifts input[type="text"]');
+            shiftInputElements.forEach(element => {
+                element.disabled = (isLocked || !canEdit);
+            });
+
+            const shiftDropdowns = [
+                'inchargeA2', 'membersA2', 'inchargeB2', 'membersB2', 'inchargeC2', 'membersC2'
+            ];
+            shiftDropdowns.forEach(id => {
+                const selectElement = document.getElementById(id);
+                if (selectElement.value) {
+                    displayGroupMembers(id, selectElement.value, id.includes('incharge') ? 'incharge' : 'normal');
+                }
+            });
+        }
+
+        function openUnlockModal() {
+            document.getElementById('unlockModal').style.display = 'flex';
+            document.getElementById('unlockUsername').value = '';
+            document.getElementById('unlockPassword').value = '';
+            document.getElementById('unlockMessage').innerHTML = '';
+        }
+
+        function closeUnlockModal() {
+            document.getElementById('unlockModal').style.display = 'none';
+        }
+
+        function authenticateAndUnlock() {
+            const username = document.getElementById('unlockUsername').value;
+            const password = document.getElementById('unlockPassword').value;
+            const unlockMessageDiv = document.getElementById('unlockMessage');
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user && (user.role === 'incharge' || user.role === 'manager' || user.role === 'admin')) {
+                if (shiftDataByDate[currentShiftDate]) {
+                    shiftDataByDate[currentShiftDate].locked = false;
+                    saveData();
+                    showMessage(unlockMessageDiv, 'Shift unlocked successfully!', 'success');
+                    closeUnlockModal();
+                    updateShiftLockState();
+                    loadShiftDataForDate();
+                } else {
+                    showMessage(unlockMessageDiv, 'No shift data found for this date to unlock.', 'error');
+                }
+            } else {
+                showMessage(unlockMessageDiv, 'Invalid credentials or insufficient permissions.', 'error');
+            }
+        }
+
+
+        // Leaves Section Functions (now integrated into Shifts)
+        function populateLeaveStaffDropdowns() {
+            const emergencyLeaveStaffSelect = document.getElementById('emergencyLeaveStaff');
+            const sickLeaveStaffSelect = document.getElementById('sickLeaveStaff');
+            const replacementStaffSelect = document.getElementById('replacementStaff');
+
+            [emergencyLeaveStaffSelect, sickLeaveStaffSelect, replacementStaffSelect].forEach(selectElement => {
+                const currentSelectedValue = selectElement.value;
+                selectElement.innerHTML = '<option value="">Select Staff</option>';
+                staff.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.rc;
+                    option.textContent = `${member.name} (${member.rc})`;
+                    selectElement.appendChild(option);
                 });
+                if (Array.from(selectElement.options).some(opt => opt.value === currentSelectedValue)) {
+                    selectElement.value = currentSelectedValue;
+                }
             });
+            updateReplacementStaffDropdown();
+        }
+
+        function saveEmergencyLeave() {
+            if (!currentUser || (currentUser.role !== 'incharge' && currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+                showMessage(document.getElementById('emergencyLeaveMessage'), 'You do not have permission to record emergency leave.', 'error');
+                return;
+            }
+
+            const staffRc = document.getElementById('emergencyLeaveStaff').value;
+            const reason = document.getElementById('leaveReason').value.trim();
+            const permissionGiver = document.getElementById('permissionGiver').value.trim();
+            const leaveTime = document.getElementById('leaveTime').value;
+            const returnTime = document.getElementById('returnTime').value;
+            const messageDiv = document.getElementById('emergencyLeaveMessage');
+
+            if (!staffRc || !reason || !permissionGiver || !leaveTime || !returnTime) {
+                showMessage(messageDiv, 'Please fill all fields for emergency leave.', 'error');
+                return;
+            }
+
+            const newEmergencyLeave = {
+                id: Date.now(),
+                staffRc,
+                reason,
+                permissionGiver,
+                leaveTime,
+                returnTime
+            };
+            emergencyLeaves.push(newEmergencyLeave);
+            showMessage(messageDiv, 'Emergency leave recorded successfully!', 'success');
+            clearEmergencyLeaveForm();
+            saveData();
+        }
+
+        function clearEmergencyLeaveForm() {
+            document.getElementById('emergencyLeaveStaff').value = '';
+            document.getElementById('leaveReason').value = '';
+            document.getElementById('permissionGiver').value = '';
+            document.getElementById('leaveTime').value = '';
+            document.getElementById('returnTime').value = '';
+            document.getElementById('emergencyLeaveMessage').innerHTML = '';
+        }
+
+        function showReplacementOption() {
+            const sickStaffRc = document.getElementById('sickLeaveStaff').value;
+            const replacementStaffGroup = document.getElementById('replacementStaffGroup');
+            if (sickStaffRc) {
+                replacementStaffGroup.style.display = 'flex';
+                updateReplacementStaffDropdown(sickStaffRc);
+            } else {
+                replacementStaffGroup.style.display = 'none';
+                document.getElementById('replacementStaff').value = '';
+            }
+        }
+
+        function updateReplacementStaffDropdown(sickStaffRc = null) {
+            const replacementStaffSelect = document.getElementById('replacementStaff');
+            const currentSelectedValue = replacementStaffSelect.value;
+            replacementStaffSelect.innerHTML = '<option value="">Select Replacement Staff</option>';
             
-            // Work entries
-            report += `\nWORK ENTRIES (${workEntries.length}):\n`;
-            workEntries.forEach((entry, index) => {
-                report += `  ${index + 1}. ${entry.task} - ${entry.status}\n`;
-                report += `     Group: ${entry.assignedGroup}\n`;
-                report += `     Department: ${entry.department}\n`;
-                report += `     Staff: ${entry.assignedStaffs.map(rc => {
-                    const person = staff.find(s => s.rc === rc);
-                    return person ? `${person.name} (${person.rc})` : rc;
-                }).join(', ')}\n`;
+            const availableForReplacement = staff.filter(s => s.rc !== sickStaffRc && !s.onLeave);
+
+            availableForReplacement.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.rc;
+                option.textContent = `${member.name} (${member.rc})`;
+                replacementStaffSelect.appendChild(option); 
             });
+            if (Array.from(replacementStaffSelect.options).some(opt => opt.value === currentSelectedValue)) {
+                replacementStaffSelect.value = currentSelectedValue;
+            }
+        }
+
+        function assignReplacement() {
+            if (!currentUser || (currentUser.role !== 'incharge' && currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+                showMessage(document.getElementById('sickLeaveMessage'), 'You do not have permission to assign replacements.', 'error');
+                return;
+            }
+
+            const sickStaffRc = document.getElementById('sickLeaveStaff').value;
+            const replacementStaffRc = document.getElementById('replacementStaff').value;
+            const messageDiv = document.getElementById('sickLeaveMessage');
+
+            if (!sickStaffRc || !replacementStaffRc) {
+                showMessage(messageDiv, 'Please select both staff on sick leave and a replacement.', 'error');
+                return;
+            }
+
+            const sickStaffMember = staff.find(s => s.rc === sickStaffRc);
+            if (sickStaffMember) {
+                sickStaffMember.onLeave = true;
+            }
+
+            sickLeaveAssignments[sickStaffRc] = replacementStaffRc;
+            showMessage(messageDiv, `Replacement ${staff.find(s => s.rc === replacementStaffRc).name} assigned for ${sickStaffMember.name}.`, 'success');
+            saveData();
+            populateLeaveStaffDropdowns();
+            loadShiftDataForDate();
+        }
+
+        function clearSickLeaveForm() {
+            const sickStaffRc = document.getElementById('sickLeaveStaff').value;
+            if (sickStaffRc && staff.find(s => s.rc === sickStaffRc)) {
+                staff.find(s => s.rc === sickStaffRc).onLeave = false;
+            }
+            delete sickLeaveAssignments[sickStaffRc];
+
+            document.getElementById('sickLeaveStaff').value = '';
+            document.getElementById('replacementStaff').value = '';
+            document.getElementById('replacementStaffGroup').style.display = 'none';
+            document.getElementById('sickLeaveMessage').innerHTML = '';
+            saveData();
+            populateLeaveStaffDropdowns();
+            loadShiftDataForDate();
+        }
+
+        function checkAndDisplaySickLeaveReplacementSection() {
+            const sickLeaveReplacementSection = document.getElementById('sickLeaveReplacementSection');
+            let anyStaffOnSickLeaveInShift = false;
+
+            const shiftIdsToCheck = ['inchargeA2', 'membersA2', 'inchargeB2', 'membersB2', 'inchargeC2', 'membersC2'];
             
-            const blob = new Blob([report], { type: 'text/plain' });
+            if (shiftDataByDate[currentShiftDate]) {
+                for (const shiftKey of shiftIdsToCheck) {
+                    const shiftMembersData = shiftDataByDate[currentShiftDate][shiftKey];
+                    if (shiftMembersData) {
+                        for (const staffRc in shiftMembersData) {
+                            if (shiftMembersData[staffRc].attendance === 'Sick Leave') {
+                                anyStaffOnSickLeaveInShift = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (anyStaffOnSickLeaveInShift) break;
+                }
+            }
+
+            if (anyStaffOnSickLeaveInShift) {
+                sickLeaveReplacementSection.style.display = 'block';
+                const sickLeaveStaffSelect = document.getElementById('sickLeaveStaff');
+                const currentSickStaffSelected = sickLeaveStaffSelect.value;
+                sickLeaveStaffSelect.innerHTML = '<option value="">Select Staff</option>';
+
+                for (const shiftKey of shiftIdsToCheck) {
+                    const shiftMembersData = shiftDataByDate[currentShiftDate][shiftKey];
+                    if (shiftMembersData) {
+                        for (const staffRc in shiftMembersData) {
+                            if (shiftMembersData[staffRc].attendance === 'Sick Leave') {
+                                const staffMember = staff.find(s => s.rc === staffRc);
+                                if (staffMember) {
+                                    const option = document.createElement('option');
+                                    option.value = staffMember.rc;
+                                    option.textContent = `${staffMember.name} (${staffMember.rc})`;
+                                    sickLeaveStaffSelect.appendChild(option);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (Array.from(sickLeaveStaffSelect.options).some(opt => opt.value === currentSickStaffSelected)) {
+                    sickLeaveStaffSelect.value = currentSickStaffSelected;
+                    showReplacementOption();
+                } else {
+                    sickLeaveStaffSelect.value = '';
+                    document.getElementById('replacementStaffGroup').style.display = 'none';
+                }
+
+            } else {
+                sickLeaveReplacementSection.style.display = 'none';
+            }
+        }
+
+
+        // Reports and Data Management
+        function saveAllData() {
+            saveData();
+            const messageDiv = document.getElementById('reportMessage');
+            showMessage(messageDiv, 'All application data saved successfully!', 'success');
+        }
+
+        function downloadReport() {
+            const dataToDownload = {
+                staff: staff,
+                groups: groups,
+                workEntries: workEntries,
+                shiftDataByDate: shiftDataByDate,
+                emergencyLeaves: emergencyLeaves,
+                sickLeaveAssignments: sickLeaveAssignments
+            };
+            const jsonString = JSON.stringify(dataToDownload, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `shift_report_${new Date().toISOString().split('T')[0]}.txt`;
+            a.download = 'ShiftSyncPro_Report.json';
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            
+            const messageDiv = document.getElementById('reportMessage');
             showMessage(messageDiv, 'Report downloaded successfully!', 'success');
         }
         
-        // Clear all forms
         function clearAllForms() {
             const messageDiv = document.getElementById('reportMessage');
             
-            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+            const confirmClear = document.createElement('div');
+            confirmClear.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                z-index: 1000; text-align: center;
+            `;
+            confirmClear.innerHTML = `
+                <p>Are you sure you want to clear all data? This cannot be undone.</p>
+                <div style="margin-top: 15px;">
+                    <button class="btn btn-danger" id="confirmClearYes">Yes, Clear All</button>
+                    <button class="btn btn-secondary" id="confirmClearNo" style="margin-left: 10px;">Cancel</button>
+                </div>
+            `;
+            document.body.appendChild(confirmClear);
+
+            document.getElementById('confirmClearYes').onclick = () => {
                 groups = {};
                 workEntries = [];
+                shiftDataByDate = {};
+                emergencyLeaves = [];
+                sickLeaveAssignments = {};
                 selectedStatus = '';
                 
-                // Reset staff assignments
                 staff.forEach(member => {
                     member.assignedToGroup = null;
+                    member.onLeave = false;
                 });
                 
-                // Clear all form inputs
                 clearWorkForm();
                 document.getElementById('groupName').value = '';
                 document.getElementById('selectGroup').value = '';
                 document.getElementById('groupMembers').innerHTML = 'Select a group to view members';
+                
+                document.getElementById('newStaffName').value = '';
+                document.getElementById('newStaffRC').value = '';
+                document.getElementById('editStaffName').value = '';
+                document.getElementById('editStaffRC').value = '';
+
+                clearEmergencyLeaveForm();
+                document.getElementById('sickLeaveStaff').value = '';
+                document.getElementById('replacementStaff').value = '';
+                document.getElementById('replacementStaffGroup').style.display = 'none';
+                document.getElementById('sickLeaveMessage').innerHTML = '';
+
+                const shiftDisplayDivs = [
+                    'inchargeAMembers', 'membersAMembers', 'inchargeBMembers', 'membersBMembers', 'inchargeCMembers', 'membersCMembers',
+                    'inchargeA2Members', 'membersA2Members', 'inchargeB2Members', 'membersB2Members', 'inchargeC2Members', 'membersC2Members'
+                ];
+                shiftDisplayDivs.forEach(divId => {
+                    const div = document.getElementById(divId);
+                    if (div) div.innerHTML = '';
+                });
+
                 populateGroupDropdowns();
+                populateStaffDropdowns();
+                populateShiftGroupDropdowns();
+                populateLeaveStaffDropdowns();
                 updateDashboard();
                 updateAvailableStaffDropdown();
                 
                 showMessage(messageDiv, 'All data cleared successfully!', 'success');
-            }
+                document.body.removeChild(confirmClear);
+            };
+
+            document.getElementById('confirmClearNo').onclick = () => {
+                document.body.removeChild(confirmClear);
+            };
         }
         
-        // Show success/error messages
         function showMessage(container, message, type) {
-            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            const existingMessage = container.querySelector('.message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', type);
+            messageDiv.textContent = message;
+            container.prepend(messageDiv);
+
             setTimeout(() => {
-                container.innerHTML = '';
+                messageDiv.remove();
             }, 5000);
         }
+
+        // Initialize application on load
+        document.addEventListener('DOMContentLoaded', loadData);
+
+    </script>
+
+    <!-- Firebase SDK Initialization Script (placed at the very end of body) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC6KyZ8N7Ix0AObEtD6S5KuU51FquJgH3c",
+            authDomain: "shiftsyncproapp.firebaseapp.com",
+            projectId: "shiftsyncproapp",
+            storageBucket: "shiftsyncproapp.firebasestorage.app",
+            messagingSenderId: "783431116962",
+            appId: "1:783431116962:web:341c7185639600b8f74ffb",
+            measurementId: "G-NT2W0XBNQR"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        console.log("Firebase SDK initialized!"); // Add this for debugging
     </script>
 </body>
 </html>
