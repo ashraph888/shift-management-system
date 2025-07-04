@@ -725,7 +725,7 @@
             left: 0;
             top: 0;
             width: 100%; /* Full width */
-            height: 100%; /* Full height */
+            height: 100%;
             overflow: auto; /* Enable scroll if needed */
             background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
             justify-content: center;
@@ -819,10 +819,6 @@
                     <span>Staff Management</span>
                 </a>
                 <!-- Removed Leaves section from sidebar as it's integrated into Shifts -->
-                <a href="#" class="nav-item" onclick="showSection('reports')">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Reports</span>
-                </a>
                 <a href="#" class="nav-item" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
@@ -847,7 +843,7 @@
                         <div class="stat-header">
                             <div>
                                 <div class="stat-title">Total Staff</div>
-                                <div class="stat-value" id="totalStaff">44</div>
+                                <div class="stat-value" id="totalStaff">0</div>
                             </div>
                             <div class="stat-icon icon-blue">
                                 <i class="fas fa-users"></i>
@@ -963,6 +959,20 @@
                     </div>
                     <div id="dailyShiftSummaryContent">
                         Select a date to view shift details.
+                    </div>
+                </div>
+
+                <!-- Daily Leave Summary Section -->
+                <div class="form-container" style="margin-top: 2rem;">
+                    <div class="section-header">
+                        <h2 class="section-title">Daily Leave Summary</h2>
+                        <div class="button-group">
+                            <label for="leaveSummaryDate" class="form-label" style="margin-right: 10px;">Select Date:</label>
+                            <input type="date" id="leaveSummaryDate" onchange="displayDailyLeaveSummary()">
+                        </div>
+                    </div>
+                    <div id="dailyLeaveSummaryContent">
+                        Select a date to view leave details.
                     </div>
                 </div>
             </div>
@@ -1108,10 +1118,10 @@
                 </div>
 
                 <div class="form-container" id="sickLeaveReplacementSection" style="margin-top: 2rem; display: none;">
-                    <h3 class="form-title">Staff on Sick Leave & Replacement</h3>
+                    <h3 class="form-title">Staff on Leave/Absent & Replacement</h3>
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="sickLeaveStaff" class="form-label">Staff on Sick Leave</label>
+                            <label for="sickLeaveStaff" class="form-label">Staff on Leave/Absent</label>
                             <select id="sickLeaveStaff" onchange="showReplacementOption()">
                                 <option value="">Select Staff</option>
                             </select>
@@ -1276,6 +1286,8 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label for="searchAvailableStaff" class="form-label">Search Available Staff</label>
+                            <input type="text" id="searchAvailableStaff" placeholder="Search by name or RC" onkeyup="filterAvailableStaff()">
                             <label for="availableStaff" class="form-label">Available Staff</label>
                             <select id="availableStaff" multiple style="height: 200px;"></select>
                         </div>
@@ -1373,7 +1385,7 @@
                         <div class="stat-header">
                             <div>
                                 <div class="stat-title">Total Employees</div>
-                                <div class="stat-value">44</div>
+                                <div class="stat-value">0</div>
                             </div>
                             <div class="stat-icon icon-blue">
                                 <i class="fas fa-users"></i>
@@ -1434,7 +1446,7 @@
                         <button class="btn btn-primary" onclick="downloadReport()">
                             <i class="fas fa-download"></i> Download Report
                         </button>
-                        <button class="btn btn-danger" onclick="clearAllForms()">
+                        <button class="btn btn-danger" id="clearAllDataBtn" onclick="clearAllForms()">
                             <i class="fas fa-trash"></i> Clear All Data
                         </button>
                     </div>
@@ -1519,14 +1531,14 @@
             { name: 'Ibrahim Shareef', rc: 'A-7014', assignedToGroup: null, onLeave: false }
         ];
 
-        // Groups data structure: { groupName: { type: 'incharge'|'normal', members: ['rc1', 'rc2'] } }
-        let groups = {};
+        // Groups data structure: [{ name: 'groupName', type: 'incharge'|'normal', members: ['rc1', 'rc2'] }]
+        let groups = [];
 
         // Work entries data structure
         let workEntries = [];
 
         // New: Shift data by date
-        // key format: 'YYYY-MM-DD' -> { locked: boolean, 'shiftId_groupName': { staffRC: { attendance: '', performance: '', remarks: '' } } }
+        // key format: 'YYYY-MM-DD' -> { locked: boolean, 'shiftId_groupName|groupType': { staffRC: { attendance: '', performance: '', remarks: '' } } }
         let shiftDataByDate = {}; 
 
         // New: Emergency Leave data structure
@@ -1553,26 +1565,44 @@
             const savedStaff = localStorage.getItem('staff');
             if (savedStaff) {
                 staff = JSON.parse(savedStaff);
+                console.log("Loaded staff from localStorage:", staff);
+            } else {
+                console.log("No staff found in localStorage, using default.");
             }
             const savedGroups = localStorage.getItem('groups');
             if (savedGroups) {
                 groups = JSON.parse(savedGroups);
+                console.log("Loaded groups from localStorage:", groups);
+            } else {
+                console.log("No groups found in localStorage, using default empty array.");
             }
             const savedWorkEntries = localStorage.getItem('workEntries');
             if (savedWorkEntries) {
                 workEntries = JSON.parse(savedWorkEntries);
+                console.log("Loaded workEntries from localStorage:", workEntries);
+            } else {
+                console.log("No workEntries found in localStorage.");
             }
             const savedShiftDataByDate = localStorage.getItem('shiftDataByDate');
             if (savedShiftDataByDate) {
                 shiftDataByDate = JSON.parse(savedShiftDataByDate);
+                console.log("Loaded shiftDataByDate from localStorage:", shiftDataByDate);
+            } else {
+                console.log("No shiftDataByDate found in localStorage.");
             }
             const savedEmergencyLeaves = localStorage.getItem('emergencyLeaves');
             if (savedEmergencyLeaves) {
                 emergencyLeaves = JSON.parse(savedEmergencyLeaves);
+                console.log("Loaded emergencyLeaves from localStorage:", emergencyLeaves);
+            } else {
+                console.log("No emergencyLeaves found in localStorage.");
             }
             const savedSickLeaveAssignments = localStorage.getItem('sickLeaveAssignments');
             if (savedSickLeaveAssignments) {
                 sickLeaveAssignments = JSON.parse(savedSickLeaveAssignments);
+                console.log("Loaded sickLeaveAssignments from localStorage:", sickLeaveAssignments);
+            } else {
+                console.log("No sickLeaveAssignments found in localStorage.");
             }
             
             // Ensure login screen is active on initial load
@@ -1589,6 +1619,7 @@
             localStorage.setItem('shiftDataByDate', JSON.stringify(shiftDataByDate));
             localStorage.setItem('emergencyLeaves', JSON.stringify(emergencyLeaves));
             localStorage.setItem('sickLeaveAssignments', JSON.stringify(sickLeaveAssignments));
+            console.log("Data saved to localStorage.");
         }
 
         // Login function
@@ -1635,6 +1666,21 @@
                 document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
             }
 
+            // Control "Clear All Data" button visibility/disabled state
+            const clearAllDataBtn = document.getElementById('clearAllDataBtn');
+            if (clearAllDataBtn) {
+                if (currentUser.role === 'staff') {
+                    clearAllDataBtn.disabled = true;
+                    clearAllDataBtn.style.opacity = '0.5'; // Visual cue for disabled
+                    clearAllDataBtn.style.cursor = 'not-allowed';
+                } else {
+                    clearAllDataBtn.disabled = false;
+                    clearAllDataBtn.style.opacity = '1';
+                    clearAllDataBtn.style.cursor = 'pointer';
+                }
+            }
+
+
             // Initialize all dynamic content
             updateDashboard();
             populateGroupDropdowns();
@@ -1647,9 +1693,11 @@
             document.getElementById('shiftDate').value = currentShiftDate;
             document.getElementById('workSummaryDate').value = currentShiftDate; // Set for dashboard too
             document.getElementById('shiftSummaryDate').value = currentShiftDate; // Set for dashboard shift summary
+            document.getElementById('leaveSummaryDate').value = currentShiftDate; // Set for dashboard leave summary
             loadShiftDataForDate(); // Load initial shift data for today's date
             displayDailyWorkSummary(); // Display work summary for today
             displayDailyShiftSummary(); // Display shift summary for today
+            displayDailyLeaveSummary(); // Display leave summary for today
 
             showSection('dashboard'); // Default to dashboard
         }
@@ -1669,14 +1717,30 @@
                 updateDashboard();
                 displayDailyWorkSummary(); // Ensure work summary is updated
                 displayDailyShiftSummary(); // Ensure shift summary is updated
+                displayDailyLeaveSummary(); // Ensure leave summary is updated
             } else if (sectionId === 'groups') {
                 populateGroupDropdowns();
                 updateAvailableStaffDropdown();
                 document.getElementById('groupMembers').innerHTML = 'Select a group to view members'; // Clear members on section change
+                document.getElementById('searchAvailableStaff').value = ''; // Clear search bar
             } else if (sectionId === 'staff-management') {
                 populateStaffDropdowns();
                 document.getElementById('addStaffForm').style.display = 'none'; // Hide add staff form initially
-            } else if (sectionId === 'shifts') {
+            } else if (sectionId === 'reports') { // Ensure button state is correct when navigating to reports
+                const clearAllDataBtn = document.getElementById('clearAllDataBtn');
+                if (clearAllDataBtn) {
+                    if (currentUser.role === 'staff') {
+                        clearAllDataBtn.disabled = true;
+                        clearAllDataBtn.style.opacity = '0.5';
+                        clearAllDataBtn.style.cursor = 'not-allowed';
+                    } else {
+                        clearAllDataBtn.disabled = false;
+                        clearAllDataBtn.style.opacity = '1';
+                        clearAllDataBtn.style.cursor = 'pointer';
+                    }
+                }
+            }
+            else if (sectionId === 'shifts') {
                 populateShiftGroupDropdowns(); // Ensure latest groups are loaded for shift dropdowns
                 populateLeaveStaffDropdowns(); // Ensure latest staff list is loaded for leaves forms
                 loadShiftDataForDate(); // Reload shift data for the current date
@@ -1686,10 +1750,10 @@
         // Dashboard Updates
         function updateDashboard() {
             document.getElementById('totalStaff').textContent = staff.length;
-            document.getElementById('totalGroups').textContent = Object.keys(groups).length;
+            document.getElementById('totalGroups').textContent = groups.length; // Updated for array
             document.getElementById('totalWork').textContent = workEntries.length;
             document.getElementById('reportWorkEntries').textContent = workEntries.length;
-            document.getElementById('reportActiveGroups').textContent = Object.keys(groups).length;
+            document.getElementById('reportActiveGroups').textContent = groups.length; // Updated for array
             saveData(); // Save data on dashboard update
         }
 
@@ -1770,6 +1834,7 @@
             }
 
             let html = '';
+            // Shift mapping now uses the composite key format
             const shiftMapping = {
                 'inchargeA2': 'Shift A (In-charge)', 'membersA2': 'Shift A (Members)',
                 'inchargeB2': 'Shift B (In-charge)', 'membersB2': 'Shift B (Members)',
@@ -1796,15 +1861,16 @@
                         if (staffMember) {
                             const data = dailyShiftData[shiftKey][staffRc]; 
                             let leaveInfo = '';
-                            if (['Sick Leave', 'Family Leave', 'Annual Leave'].includes(data.attendance)) {
+                            // Updated leave info to include all relevant statuses
+                            if (['Sick Leave', 'Family Leave', 'Annual Leave', 'Absent'].includes(data.attendance)) {
                                 leaveInfo = `<span class="leave-info">(On ${data.attendance})</span>`;
                             }
-                            const sickStaffRc = Object.keys(sickLeaveAssignments).find(key => sickLeaveAssignments[key] === staffRc);
-                            if (sickStaffRc) {
-                                const sickStaffName = staff.find(s => s.rc === sickStaffRc)?.name || 'Unknown';
-                                leaveInfo += `<span class="leave-info">(Replacing ${sickStaffName})</span>`;
+                            const replacedForRc = Object.keys(sickLeaveAssignments).find(key => sickLeaveAssignments[key] === staffMember.rc);
+                            if (replacedForRc) {
+                                const replacedForStaffName = staff.find(s => s.rc === replacedForRc)?.name || 'Unknown';
+                                leaveInfo += `<span class="leave-info" style="color: red;">(Replacing ${replacedForStaffName})</span>`;
                             }
-                            if (data.attendance === 'Sick Leave' && sickLeaveAssignments[staffMember.rc]) {
+                            if (['Sick Leave', 'Family Leave', 'Annual Leave', 'Absent'].includes(data.attendance) && sickLeaveAssignments[staffMember.rc]) {
                                 const replacementStaffName = staff.find(s => s.rc === sickLeaveAssignments[staffMember.rc])?.name || 'Unknown';
                                 leaveInfo += `<span class="leave-info">(Replaced by ${replacementStaffName})</span>`;
                             }
@@ -1825,6 +1891,60 @@
                     `;
                 }
             }
+            summaryContentDiv.innerHTML = html;
+        }
+
+        // Daily Leave Summary for Dashboard
+        function displayDailyLeaveSummary() {
+            const selectedDate = document.getElementById('leaveSummaryDate').value;
+            const summaryContentDiv = document.getElementById('dailyLeaveSummaryContent');
+            summaryContentDiv.innerHTML = ''; // Clear previous content
+
+            if (!selectedDate) {
+                summaryContentDiv.textContent = 'Please select a date to view leave details.';
+                return;
+            }
+
+            const dailyLeaves = emergencyLeaves.filter(leave => leave.leaveTime.startsWith(selectedDate));
+
+            if (dailyLeaves.length === 0) {
+                summaryContentDiv.textContent = `No emergency leave entries found for ${selectedDate}.`;
+                return;
+            }
+
+            let html = `
+                <table class="data-table" style="width:100%; border-collapse: collapse; margin-top: 1rem;">
+                    <thead>
+                        <tr style="background-color: var(--primary-light);">
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Staff Name (RC)</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Reason</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Permission By</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Leave Time</th>
+                            <th style="padding: 0.75rem; border: 1px solid var(--light-gray); text-align: left;">Return Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            dailyLeaves.forEach(entry => {
+                const staffMember = staff.find(s => s.rc === entry.staffRc);
+                const staffName = staffMember ? `${staffMember.name} (${staffMember.rc})` : entry.staffRc;
+
+                html += `
+                    <tr>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${staffName}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.reason}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.permissionGiver}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.leaveTime.replace('T', ' ')}</td>
+                        <td style="padding: 0.75rem; border: 1px solid var(--light-gray);">${entry.returnTime.replace('T', ' ')}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
             summaryContentDiv.innerHTML = html;
         }
 
@@ -1912,20 +2032,27 @@
                     const oldRc = staff[staffIndex].rc;
                     staff[staffIndex].rc = newRc;
 
-                    for (const groupName in groups) {
-                        const group = groups[groupName];
+                    // Update RC in all groups
+                    groups.forEach(group => {
                         const memberIndex = group.members.indexOf(oldRc);
                         if (memberIndex !== -1) {
                             group.members[memberIndex] = newRc;
                         }
-                    }
+                    });
                     emergencyLeaves.forEach(leave => {
                         if (leave.staffRc === oldRc) leave.staffRc = newRc;
                     });
+                    // Update sickLeaveAssignments: if oldRc was a sick staff or replacement, update to newRc
                     if (sickLeaveAssignments[oldRc]) {
                         sickLeaveAssignments[newRc] = sickLeaveAssignments[oldRc];
                         delete sickLeaveAssignments[oldRc];
                     }
+                    for (const sickRc in sickLeaveAssignments) {
+                        if (sickLeaveAssignments[sickRc] === oldRc) {
+                            sickLeaveAssignments[sickRc] = newRc;
+                        }
+                    }
+
                     for (const dateKey in shiftDataByDate) {
                         for (const shiftKey in shiftDataByDate[dateKey]) {
                             if (shiftDataByDate[dateKey][shiftKey][oldRc]) {
@@ -1972,9 +2099,10 @@
             document.getElementById('confirmDeleteYes').onclick = () => {
                 staff = staff.filter(s => s.rc !== rcToDelete);
 
-                for (const groupName in groups) {
-                    groups[groupName].members = groups[groupName].members.filter(rc => rc !== rcToDelete);
-                }
+                // Update all groups
+                groups.forEach(group => {
+                    group.members = group.members.filter(rc => rc !== rcToDelete);
+                });
                 
                 emergencyLeaves = emergencyLeaves.filter(leave => leave.staffRc !== rcToDelete);
 
@@ -2013,17 +2141,20 @@
             selectGroup.innerHTML = '<option value="">Select a group</option>';
             assignedGroup.innerHTML = '<option value="">Select Group</option>';
 
-            for (const groupName in groups) {
+            groups.forEach(group => {
+                // Use a composite value for the option to store both name and type
+                const optionValue = `${group.name}|${group.type}`;
+
                 const option1 = document.createElement('option');
-                option1.value = groupName;
-                option1.textContent = `${groupName} (${groups[groupName].type === 'incharge' ? 'In-charge' : 'Normal'})`;
+                option1.value = optionValue;
+                option1.textContent = `${group.name} (${group.type === 'incharge' ? 'In-charge' : 'Normal'})`;
                 selectGroup.appendChild(option1);
 
                 const option2 = document.createElement('option');
-                option2.value = groupName;
-                option2.textContent = `${groupName} (${groups[groupName].type === 'incharge' ? 'In-charge' : 'Normal'})`;
+                option2.value = optionValue;
+                option2.textContent = `${group.name} (${group.type === 'incharge' ? 'In-charge' : 'Normal'})`;
                 assignedGroup.appendChild(option2);
-            }
+            });
             populateShiftGroupDropdowns();
             updateDashboard();
         }
@@ -2039,29 +2170,44 @@
             const groupType = document.getElementById('groupType').value;
             const messageDiv = document.getElementById('groupMessage');
 
+            console.log("Attempting to create group:", { groupName, groupType });
+            console.log("Current groups before push:", JSON.parse(JSON.stringify(groups))); // Deep copy for logging
+
             if (!groupName) {
                 showMessage(messageDiv, 'Please enter a group name.', 'error');
                 return;
             }
-            if (groups[groupName]) {
-                showMessage(messageDiv, 'Group with this name already exists.', 'error');
+            // Check if a group with the same name AND type already exists
+            if (groups.some(g => g.name === groupName && g.type === groupType)) {
+                showMessage(messageDiv, `Group "${groupName}" of type "${groupType}" already exists.`, 'error');
                 return;
             }
 
-            groups[groupName] = { type: groupType, members: [] };
+            groups.push({ name: groupName, type: groupType, members: [] });
+            console.log("Groups after push:", JSON.parse(JSON.stringify(groups)));
+
+            saveData(); // Explicitly save immediately after modification
+            console.log("Data saved to localStorage.");
+
             showMessage(messageDiv, `Group "${groupName}" (${groupType}) created successfully!`, 'success');
             document.getElementById('groupName').value = '';
-            populateGroupDropdowns();
-            updateDashboard();
+            populateGroupDropdowns(); // Re-populate dropdowns
+            updateDashboard(); // This also calls saveData, but explicit call above is good.
+            console.log("UI updated.");
         }
 
         function updateAvailableStaffDropdown() {
             const availableStaffSelect = document.getElementById('availableStaff');
             availableStaffSelect.innerHTML = '';
-            const selectedGroup = document.getElementById('selectGroup').value;
-            const groupMembersRcs = selectedGroup ? groups[selectedGroup].members : [];
+            
+            // Get all RCs currently assigned to ANY group
+            const allAssignedRcs = new Set();
+            groups.forEach(group => {
+                group.members.forEach(rc => allAssignedRcs.add(rc));
+            });
 
-            const unassignedStaff = staff.filter(s => !groupMembersRcs.includes(s.rc));
+            // Filter staff to include only those NOT assigned to any group
+            const unassignedStaff = staff.filter(s => !allAssignedRcs.has(s.rc));
 
             unassignedStaff.forEach(member => {
                 const option = document.createElement('option');
@@ -2069,15 +2215,45 @@
                 option.textContent = `${member.name} (${member.rc})`;
                 availableStaffSelect.appendChild(option);
             });
+
+            // Apply filter after populating
+            filterAvailableStaff();
         }
 
+        function filterAvailableStaff() {
+            const searchInput = document.getElementById('searchAvailableStaff');
+            const filter = searchInput.value.toLowerCase();
+            const availableStaffSelect = document.getElementById('availableStaff');
+            const options = availableStaffSelect.options;
+
+            for (let i = 0; i < options.length; i++) {
+                const optionText = options[i].textContent.toLowerCase();
+                if (optionText.includes(filter)) {
+                    options[i].style.display = '';
+                } else {
+                    options[i].style.display = 'none';
+                }
+            }
+        }
+
+
         function showGroupMembers() {
-            const groupName = document.getElementById('selectGroup').value;
+            const selectedGroupValue = document.getElementById('selectGroup').value;
             const groupMembersDiv = document.getElementById('groupMembers');
             groupMembersDiv.innerHTML = '';
             
-            if (groupName && groups[groupName]) {
-                const members = groups[groupName].members;
+            if (!selectedGroupValue) {
+                groupMembersDiv.textContent = 'Select a group to view members';
+                updateAvailableStaffDropdown(); // Refresh available staff when no group is selected
+                return;
+            }
+
+            // Parse the composite value to get name and type
+            const [groupName, groupType] = selectedGroupValue.split('|');
+            const selectedGroupObj = groups.find(g => g.name === groupName && g.type === groupType);
+
+            if (selectedGroupObj) {
+                const members = selectedGroupObj.members;
                 if (members.length === 0) {
                     groupMembersDiv.textContent = 'This group has no members yet.';
                 } else {
@@ -2086,7 +2262,8 @@
                         if (member) {
                             const memberTag = document.createElement('span');
                             memberTag.classList.add('member-tag');
-                            memberTag.innerHTML = `${member.name} (${member.rc}) <button class="remove-btn" onclick="removeFromGroup('${rc}', '${groupName}')">&times;</button>`;
+                            // Pass the composite group value to removeFromGroup
+                            memberTag.innerHTML = `${member.name} (${member.rc}) <button class="remove-btn" onclick="removeFromGroup('${rc}', '${selectedGroupValue}')">&times;</button>`;
                             groupMembersDiv.appendChild(memberTag);
                         }
                     });
@@ -2098,11 +2275,11 @@
         }
 
         function addToGroup() {
-            const groupName = document.getElementById('selectGroup').value;
+            const selectedGroupValue = document.getElementById('selectGroup').value;
             const availableStaffSelect = document.getElementById('availableStaff');
             const messageDiv = document.getElementById('groupMessage');
 
-            if (!groupName) {
+            if (!selectedGroupValue) {
                 showMessage(messageDiv, 'Please select a group first.', 'error');
                 return;
             }
@@ -2111,27 +2288,44 @@
                 return;
             }
 
+            const [groupName, groupType] = selectedGroupValue.split('|');
+            const targetGroup = groups.find(g => g.name === groupName && g.type === groupType);
+
+            if (!targetGroup) {
+                showMessage(messageDiv, 'Selected group not found.', 'error');
+                return;
+            }
+
             const selectedRcs = Array.from(availableStaffSelect.selectedOptions).map(option => option.value);
             selectedRcs.forEach(rc => {
-                if (!groups[groupName].members.includes(rc)) {
-                    groups[groupName].members.push(rc);
+                if (!targetGroup.members.includes(rc)) {
+                    targetGroup.members.push(rc);
                     const staffMember = staff.find(s => s.rc === rc);
                     if (staffMember) {
-                        staffMember.assignedToGroup = groupName;
+                        // This assignment is now less critical as filtering is global
+                        // staffMember.assignedToGroup = selectedGroupValue; 
                     }
                 }
             });
             showMessage(messageDiv, 'Staff added to group successfully!', 'success');
-            showGroupMembers();
+            showGroupMembers(); // Refresh members list and available staff
             updateDashboard();
         }
 
-        function removeFromGroup(rcToRemove = null, groupNameFromTag = null) {
-            const groupName = groupNameFromTag || document.getElementById('selectGroup').value;
+        function removeFromGroup(rcToRemove = null, selectedGroupValueFromTag = null) {
+            const selectedGroupValue = selectedGroupValueFromTag || document.getElementById('selectGroup').value;
             const messageDiv = document.getElementById('groupMessage');
 
-            if (!groupName) {
+            if (!selectedGroupValue) {
                 showMessage(messageDiv, 'Please select a group first.', 'error');
+                return;
+            }
+
+            const [groupName, groupType] = selectedGroupValue.split('|');
+            const targetGroup = groups.find(g => g.name === groupName && g.type === groupType);
+
+            if (!targetGroup) {
+                showMessage(messageDiv, 'Selected group not found.', 'error');
                 return;
             }
 
@@ -2149,14 +2343,17 @@
             }
 
             rcsToDelete.forEach(rc => {
-                groups[groupName].members = groups[groupName].members.filter(memberRc => memberRc !== rc);
+                targetGroup.members = targetGroup.members.filter(memberRc => memberRc !== rc);
+                // The assignedToGroup field on staff is now less relevant for filtering,
+                // as filtering is done based on presence in *any* group.
+                // However, keeping it updated might be useful for other logic.
                 const staffMember = staff.find(s => s.rc === rc);
-                if (staffMember && staffMember.assignedToGroup === groupName) {
+                if (staffMember && staffMember.assignedToGroup === selectedGroupValue) {
                     staffMember.assignedToGroup = null;
                 }
             });
             showMessage(messageDiv, 'Staff removed from group successfully!', 'success');
-            showGroupMembers();
+            showGroupMembers(); // Refresh members list and available staff
             updateDashboard();
         }
 
@@ -2167,12 +2364,19 @@
             selectedStatus = status;
         }
 
-        function updateAssignedStaffDropdown(selectedGroupName) {
+        function updateAssignedStaffDropdown(selectedGroupValue) {
             const assignedStaffsSelect = document.getElementById('assignedStaffs');
             assignedStaffsSelect.innerHTML = '';
             
-            if (selectedGroupName && groups[selectedGroupName]) {
-                const membersRcs = groups[selectedGroupName].members;
+            if (!selectedGroupValue) {
+                return;
+            }
+
+            const [groupName, groupType] = selectedGroupValue.split('|');
+            const selectedGroupObj = groups.find(g => g.name === groupName && g.type === groupType);
+
+            if (selectedGroupObj) {
+                const membersRcs = selectedGroupObj.members;
                 const members = staff.filter(s => membersRcs.includes(s.rc));
                 members.forEach(member => {
                     const option = document.createElement('option');
@@ -2187,7 +2391,7 @@
             const logTime = document.getElementById('logTime').value;
             const department = document.getElementById('department').value;
             const task = document.getElementById('task').value.trim();
-            const assignedGroup = document.getElementById('assignedGroup').value;
+            const assignedGroupValue = document.getElementById('assignedGroup').value; // Get composite value
             const assignedShift = document.getElementById('assignedShift').value;
             const assignedStaffs = Array.from(document.getElementById('assignedStaffs').selectedOptions).map(option => option.value);
             const attendTime = document.getElementById('attendTime').value;
@@ -2196,7 +2400,7 @@
             const reason = document.getElementById('reason').value.trim();
             const messageDiv = document.getElementById('workMessage');
 
-            if (!logTime || !department || !task || !assignedGroup || !assignedShift || assignedStaffs.length === 0 || !selectedStatus) {
+            if (!logTime || !department || !task || !assignedGroupValue || !assignedShift || assignedStaffs.length === 0 || !selectedStatus) {
                 showMessage(messageDiv, 'Please fill in all required fields (Log Time, Department, Task, Assigned Group, Assigned Shift, Assigned Staff, Status).', 'error');
                 return;
             }
@@ -2206,7 +2410,7 @@
                 logTime,
                 department,
                 task,
-                assignedGroup,
+                assignedGroup: assignedGroupValue, // Store composite value
                 assignedShift,
                 assignedStaffs,
                 attendTime: attendTime || 'N/A',
@@ -2265,31 +2469,27 @@
 
             shiftDropdowns.forEach(id => {
                 const selectElement = document.getElementById(id);
-                let currentSelectedGroupName = '';
+                let currentSelectedGroupValue = ''; // This will be the composite value
                 if (shiftDataByDate[currentShiftDate] && shiftDataByDate[currentShiftDate][id]) {
-                    const firstStaffRc = Object.keys(shiftDataByDate[currentShiftDate][id])[0];
-                    if (firstStaffRc) {
-                        const staffMember = staff.find(s => s.rc === firstStaffRc);
-                        if (staffMember && staffMember.assignedToGroup) {
-                            currentSelectedGroupName = staffMember.assignedToGroup;
-                        }
-                    }
+                    // The stored key for shiftDataByDate is already the composite group value
+                    currentSelectedGroupValue = shiftDataByDate[currentShiftDate][id].groupValue || ''; 
                 }
                 
                 selectElement.innerHTML = `<option value="">Select ${id.includes('incharge') ? 'In-charge' : 'Members'} Group</option>`;
                 const groupTypeFilter = id.includes('incharge') ? 'incharge' : 'normal';
 
-                for (const groupName in groups) {
-                    if (groups[groupName].type === groupTypeFilter) {
+                groups.forEach(group => { // Iterate through the array of groups
+                    if (group.type === groupTypeFilter) {
                         const option = document.createElement('option');
-                        option.value = groupName;
-                        option.textContent = groupName;
+                        option.value = `${group.name}|${group.type}`; // Composite value
+                        option.textContent = group.name; // Display only the name
                         selectElement.appendChild(option);
                     }
-                }
-                if (Array.from(selectElement.options).some(opt => opt.value === currentSelectedGroupName)) {
-                    selectElement.value = currentSelectedGroupName;
-                    displayGroupMembers(id, currentSelectedGroupName, groupTypeFilter);
+                });
+
+                if (Array.from(selectElement.options).some(opt => opt.value === currentSelectedGroupValue)) {
+                    selectElement.value = currentSelectedGroupValue;
+                    displayGroupMembers(id, currentSelectedGroupValue, groupTypeFilter);
                 } else {
                     document.getElementById(id + 'Members').innerHTML = '';
                 }
@@ -2297,7 +2497,7 @@
             checkAndDisplaySickLeaveReplacementSection();
         }
 
-        function displayGroupMembers(selectId, groupName, groupType) {
+        function displayGroupMembers(selectId, selectedGroupValue, groupType) {
             const displayDivId = selectId + 'Members';
             const displayDiv = document.getElementById(displayDivId);
             displayDiv.innerHTML = '';
@@ -2311,9 +2511,16 @@
                 groupSelectElement.disabled = (isLocked || !canEdit);
             }
 
+            if (!selectedGroupValue) {
+                displayDiv.textContent = 'No group selected or group has no members.';
+                return;
+            }
 
-            if (groupName && groups[groupName]) {
-                const members = groups[groupName].members;
+            const [groupName, groupTypeFromValue] = selectedGroupValue.split('|');
+            const selectedGroupObj = groups.find(g => g.name === groupName && g.type === groupTypeFromValue);
+
+            if (selectedGroupObj) {
+                const members = selectedGroupObj.members;
                 const shiftKey = selectId;
 
                 if (!shiftDataByDate[currentShiftDate]) {
@@ -2322,6 +2529,9 @@
                 if (!shiftDataByDate[currentShiftDate][shiftKey]) {
                     shiftDataByDate[currentShiftDate][shiftKey] = {};
                 }
+                // Store the group value with the shift data
+                shiftDataByDate[currentShiftDate][shiftKey].groupValue = selectedGroupValue;
+
 
                 if (members.length === 0) {
                     displayDiv.textContent = 'This group has no members yet.';
@@ -2348,7 +2558,7 @@
                                 remarks: ''
                             };
 
-                            const isLeaveStatus = ['Sick Leave', 'Family Leave', 'Annual Leave'].includes(savedData.attendance);
+                            const isLeaveStatus = ['Sick Leave', 'Family Leave', 'Annual Leave', 'Absent'].includes(savedData.attendance);
                             const performanceDisabled = (isLeaveStatus || isLocked || !canEdit) ? 'disabled' : '';
                             const remarksDisabled = (isLeaveStatus || isLocked || !canEdit) ? 'disabled' : '';
 
@@ -2356,12 +2566,14 @@
                             if (isLeaveStatus) {
                                 leaveInfo = `<span class="leave-info">(On ${savedData.attendance})</span>`;
                             } 
+                            // Check if this staff member is a replacement for someone else on this date
                             const replacedForRc = Object.keys(sickLeaveAssignments).find(key => sickLeaveAssignments[key] === staffMember.rc);
                             if (replacedForRc) {
                                 const replacedForStaffName = staff.find(s => s.rc === replacedForRc)?.name || 'Unknown';
-                                leaveInfo += `<span class="leave-info">(Replacing ${replacedForStaffName})</span>`;
+                                leaveInfo += `<span class="leave-info" style="color: red;">(Replacing ${replacedForStaffName})</span>`;
                             }
-                            if (savedData.attendance === 'Sick Leave' && sickLeaveAssignments[staffMember.rc]) {
+                            // Check if this staff member is on leave and has a replacement assigned for them
+                            if (['Sick Leave', 'Family Leave', 'Annual Leave', 'Absent'].includes(savedData.attendance) && sickLeaveAssignments[staffMember.rc]) {
                                 const replacementStaffName = staff.find(s => s.rc === sickLeaveAssignments[staffMember.rc])?.name || 'Unknown';
                                 leaveInfo += `<span class="leave-info">(Replaced by ${replacementStaffName})</span>`;
                             }
@@ -2411,7 +2623,8 @@
         }
 
         function updateAttendancePerformance(element) {
-            if (!currentUser || (currentUser.role !== 'incharge' && currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+            // Corrected permission check
+            if (!currentUser || !(currentUser.role === 'incharge' || currentUser.role === 'manager' || currentUser.role === 'admin')) {
                 showMessage(document.getElementById('appContainer'), 'You do not have permission to edit attendance or performance.', 'error');
                 element.value = element.dataset.originalValue || '';
                 return;
@@ -2436,7 +2649,8 @@
 
             if (element.classList.contains('attendance-status')) {
                 shiftDataByDate[currentShiftDate][shiftKey][staffRc].attendance = element.value;
-                const isLeaveStatus = ['Sick Leave', 'Family Leave', 'Annual Leave'].includes(element.value);
+                // Updated isLeaveStatus to include 'Absent'
+                const isLeaveStatus = ['Sick Leave', 'Family Leave', 'Annual Leave', 'Absent'].includes(element.value);
                 const performanceSelect = element.parentNode.querySelector('.performance-status');
                 const remarksInput = element.parentNode.querySelector('.remarks-field');
                 
@@ -2448,6 +2662,27 @@
                     if (remarksInput) remarksInput.value = '';
                     shiftDataByDate[currentShiftDate][shiftKey][staffRc].performance = '';
                     shiftDataByDate[currentShiftDate][shiftKey][staffRc].remarks = '';
+                } else {
+                    // If attendance is NOT a leave status, clear any associated sick leave assignment
+                    // Check if this staff member was a sick staff or a replacement for this date
+                    let assignmentCleared = false;
+                    for (const sickRc in sickLeaveAssignments) {
+                        if (sickRc === staffRc && sickLeaveAssignments[sickRc]) { // This staff was sick
+                            delete sickLeaveAssignments[sickRc];
+                            assignmentCleared = true;
+                            break;
+                        }
+                        if (sickLeaveAssignments[sickRc] === staffRc) { // This staff was a replacement
+                            delete sickLeaveAssignments[sickRc];
+                            assignmentCleared = true;
+                            break;
+                        }
+                    }
+                    if (assignmentCleared) {
+                        populateLeaveStaffDropdowns(); // Refresh dropdowns
+                        loadShiftDataForDate(); // Re-load shift data to refresh display
+                        displayDailyShiftSummary(); // Re-display daily shift summary
+                    }
                 }
 
                 const staffMember = staff.find(s => s.rc === staffRc);
@@ -2466,7 +2701,8 @@
         }
 
         function saveShiftData() {
-            if (!currentUser || (currentUser.role !== 'incharge' && currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+            // Corrected permission check
+            if (!currentUser || !(currentUser.role === 'incharge' || currentUser.role === 'manager' || currentUser.role === 'admin')) {
                 showMessage(document.getElementById('appContainer'), 'You do not have permission to save shift data.', 'error');
                 return;
             }
@@ -2488,10 +2724,11 @@
 
         function updateShiftLockState() {
             const isLocked = shiftDataByDate[currentShiftDate]?.locked || false;
-            const canEdit = currentUser && (currentUser.role === 'incharge' || currentUser.role === 'manager' && currentUser.role === 'admin');
+            // Corrected canEdit logic
+            const canEdit = currentUser && (currentUser.role === 'incharge' || currentUser.role === 'manager' || currentUser.role === 'admin');
 
             document.getElementById('saveShiftDataBtn').style.display = isLocked ? 'none' : 'inline-block';
-            document.getElementById('unlockShiftBtn').style.display = isLocked ? 'inline-block' : 'none';
+            document.getElementById('unlockShiftBtn').style.display = (isLocked && canEdit) ? 'inline-block' : 'none'; // Only show unlock if locked AND user can edit
 
             const shiftInputElements = document.querySelectorAll('#shifts select, #shifts input[type="text"]');
             shiftInputElements.forEach(element => {
@@ -2503,8 +2740,15 @@
             ];
             shiftDropdowns.forEach(id => {
                 const selectElement = document.getElementById(id);
-                if (selectElement.value) {
+                // Use the stored group value to re-display members if available
+                const storedGroupValue = shiftDataByDate[currentShiftDate]?.[id]?.groupValue;
+                if (storedGroupValue) {
+                    selectElement.value = storedGroupValue;
+                    displayGroupMembers(id, storedGroupValue, id.includes('incharge') ? 'incharge' : 'normal');
+                } else if (selectElement.value) { // If a group is selected but not stored (e.g., new selection)
                     displayGroupMembers(id, selectElement.value, id.includes('incharge') ? 'incharge' : 'normal');
+                } else { // If no group is selected
+                    document.getElementById(id + 'Members').innerHTML = '';
                 }
             });
         }
@@ -2527,6 +2771,7 @@
 
             const user = users.find(u => u.username === username && u.password === password);
 
+            // This permission check was already correct
             if (user && (user.role === 'incharge' || user.role === 'manager' || user.role === 'admin')) {
                 if (shiftDataByDate[currentShiftDate]) {
                     shiftDataByDate[currentShiftDate].locked = false;
@@ -2567,7 +2812,8 @@
         }
 
         function saveEmergencyLeave() {
-            if (!currentUser || (currentUser.role !== 'incharge' && currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+            // Corrected permission check
+            if (!currentUser || !(currentUser.role === 'incharge' || currentUser.role === 'manager' || currentUser.role === 'admin')) {
                 showMessage(document.getElementById('emergencyLeaveMessage'), 'You do not have permission to record emergency leave.', 'error');
                 return;
             }
@@ -2596,6 +2842,7 @@
             showMessage(messageDiv, 'Emergency leave recorded successfully!', 'success');
             clearEmergencyLeaveForm();
             saveData();
+            displayDailyLeaveSummary(); // Update dashboard leave summary
         }
 
         function clearEmergencyLeaveForm() {
@@ -2624,7 +2871,22 @@
             const currentSelectedValue = replacementStaffSelect.value;
             replacementStaffSelect.innerHTML = '<option value="">Select Replacement Staff</option>';
             
-            const availableForReplacement = staff.filter(s => s.rc !== sickStaffRc && !s.onLeave);
+            // Updated filter to exclude staff on any type of leave or absent
+            const availableForReplacement = staff.filter(s => s.rc !== sickStaffRc && !['Sick Leave', 'Family Leave', 'Annual Leave', 'Absent'].some(status => {
+                // Check if the staff member is on leave/absent in the current shift data
+                let isOnLeaveInShift = false;
+                if (shiftDataByDate[currentShiftDate]) {
+                    for (const shiftKey in shiftDataByDate[currentShiftDate]) {
+                        // Ensure shiftMembersData exists and has the staffRc as a key
+                        if (shiftDataByDate[currentShiftDate][shiftKey] && shiftDataByDate[currentShiftDate][shiftKey][s.rc] && shiftDataByDate[currentShiftDate][shiftKey][s.rc].attendance === status) {
+                            isOnLeaveInShift = true;
+                            break;
+                        }
+                    }
+                }
+                return isOnLeaveInShift;
+            }));
+
 
             availableForReplacement.forEach(member => {
                 const option = document.createElement('option');
@@ -2638,7 +2900,8 @@
         }
 
         function assignReplacement() {
-            if (!currentUser || (currentUser.role !== 'incharge' && currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+            // Corrected permission check
+            if (!currentUser || !(currentUser.role === 'incharge' || currentUser.role === 'manager' || currentUser.role === 'admin')) {
                 showMessage(document.getElementById('sickLeaveMessage'), 'You do not have permission to assign replacements.', 'error');
                 return;
             }
@@ -2648,20 +2911,21 @@
             const messageDiv = document.getElementById('sickLeaveMessage');
 
             if (!sickStaffRc || !replacementStaffRc) {
-                showMessage(messageDiv, 'Please select both staff on sick leave and a replacement.', 'error');
+                showMessage(messageDiv, 'Please select both staff on leave/absent and a replacement.', 'error');
                 return;
             }
 
             const sickStaffMember = staff.find(s => s.rc === sickStaffRc);
             if (sickStaffMember) {
-                sickStaffMember.onLeave = true;
+                sickStaffMember.onLeave = true; // Mark as on leave
             }
 
             sickLeaveAssignments[sickStaffRc] = replacementStaffRc;
             showMessage(messageDiv, `Replacement ${staff.find(s => s.rc === replacementStaffRc).name} assigned for ${sickStaffMember.name}.`, 'success');
             saveData();
             populateLeaveStaffDropdowns();
-            loadShiftDataForDate();
+            loadShiftDataForDate(); // Re-load shift data to refresh display
+            displayDailyShiftSummary(); // Re-display daily shift summary
         }
 
         function clearSickLeaveForm() {
@@ -2677,31 +2941,33 @@
             document.getElementById('sickLeaveMessage').innerHTML = '';
             saveData();
             populateLeaveStaffDropdowns();
-            loadShiftDataForDate();
+            loadShiftDataForDate(); // Re-load shift data to refresh display
+            displayDailyShiftSummary(); // Re-display daily shift summary
         }
 
         function checkAndDisplaySickLeaveReplacementSection() {
             const sickLeaveReplacementSection = document.getElementById('sickLeaveReplacementSection');
-            let anyStaffOnSickLeaveInShift = false;
+            let anyStaffOnLeaveOrAbsentInShift = false;
 
             const shiftIdsToCheck = ['inchargeA2', 'membersA2', 'inchargeB2', 'membersB2', 'inchargeC2', 'membersC2'];
+            const leaveAbsentStatuses = ['Sick Leave', 'Family Leave', 'Annual Leave', 'Absent'];
             
             if (shiftDataByDate[currentShiftDate]) {
                 for (const shiftKey of shiftIdsToCheck) {
                     const shiftMembersData = shiftDataByDate[currentShiftDate][shiftKey];
                     if (shiftMembersData) {
                         for (const staffRc in shiftMembersData) {
-                            if (shiftMembersData[staffRc].attendance === 'Sick Leave') {
-                                anyStaffOnSickLeaveInShift = true;
+                            if (leaveAbsentStatuses.includes(shiftMembersData[staffRc].attendance)) {
+                                anyStaffOnLeaveOrAbsentInShift = true;
                                 break;
                             }
                         }
                     }
-                    if (anyStaffOnSickLeaveInShift) break;
+                    if (anyStaffOnLeaveOrAbsentInShift) break;
                 }
             }
 
-            if (anyStaffOnSickLeaveInShift) {
+            if (anyStaffOnLeaveOrAbsentInShift) {
                 sickLeaveReplacementSection.style.display = 'block';
                 const sickLeaveStaffSelect = document.getElementById('sickLeaveStaff');
                 const currentSickStaffSelected = sickLeaveStaffSelect.value;
@@ -2711,12 +2977,12 @@
                     const shiftMembersData = shiftDataByDate[currentShiftDate][shiftKey];
                     if (shiftMembersData) {
                         for (const staffRc in shiftMembersData) {
-                            if (shiftMembersData[staffRc].attendance === 'Sick Leave') {
+                            if (leaveAbsentStatuses.includes(shiftMembersData[staffRc].attendance)) {
                                 const staffMember = staff.find(s => s.rc === staffRc);
                                 if (staffMember) {
                                     const option = document.createElement('option');
                                     option.value = staffMember.rc;
-                                    option.textContent = `${staffMember.name} (${staffMember.rc})`;
+                                    option.textContent = `${staffMember.name} (${staffMember.rc}) - ${shiftMembersData[staffRc].attendance}`;
                                     sickLeaveStaffSelect.appendChild(option);
                                 }
                             }
@@ -2769,6 +3035,12 @@
         
         function clearAllForms() {
             const messageDiv = document.getElementById('reportMessage');
+
+            // Permission check for clearing all data
+            if (!currentUser || !['admin', 'manager', 'incharge'].includes(currentUser.role)) {
+                showMessage(messageDiv, 'You do not have permission to clear all data. Only Admin, Manager, or In-charge roles can perform this action.', 'error');
+                return;
+            }
             
             const confirmClear = document.createElement('div');
             confirmClear.style.cssText = `
@@ -2786,10 +3058,10 @@
             document.body.appendChild(confirmClear);
 
             document.getElementById('confirmClearYes').onclick = () => {
-                groups = {};
+                groups = []; // Reset groups to empty array
                 workEntries = [];
                 shiftDataByDate = {};
-                emergencyLeaves = [];
+                emergencyLeaves = []; 
                 sickLeaveAssignments = {};
                 selectedStatus = '';
                 
@@ -2829,6 +3101,7 @@
                 populateLeaveStaffDropdowns();
                 updateDashboard();
                 updateAvailableStaffDropdown();
+                displayDailyLeaveSummary(); 
                 
                 showMessage(messageDiv, 'All data cleared successfully!', 'success');
                 document.body.removeChild(confirmClear);
@@ -2858,26 +3131,6 @@
         // Initialize application on load
         document.addEventListener('DOMContentLoaded', loadData);
 
-    </script>
-
-    <!-- Firebase SDK Initialization Script (placed at the very end of body) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC6KyZ8N7Ix0AObEtD6S5KuU51FquJgH3c",
-            authDomain: "shiftsyncproapp.firebaseapp.com",
-            projectId: "shiftsyncproapp",
-            storageBucket: "shiftsyncproapp.firebasestorage.app",
-            messagingSenderId: "783431116962",
-            appId: "1:783431116962:web:341c7185639600b8f74ffb",
-            measurementId: "G-NT2W0XBNQR"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        console.log("Firebase SDK initialized!"); // Add this for debugging
     </script>
 </body>
 </html>
